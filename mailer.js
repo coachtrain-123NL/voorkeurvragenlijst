@@ -13,7 +13,8 @@
 //   sendRapportMail({ naam, email, teamCode, rapport, rapportUrl })
 // ─────────────────────────────────────────────────────────────────────────────
 
-const nodemailer     = require('nodemailer');
+const nodemailer      = require('nodemailer');
+const dns             = require('dns');
 const { generatePdf } = require('./pdf');
 
 // Minimale Spiral Dynamics-metadata — genoeg voor de e-mailsamenvatting
@@ -55,11 +56,27 @@ function createTransport() {
 
   console.log(`[mailer] SMTP config: host=${SMTP_HOST} port=${port} secure=${secure} user=${SMTP_USER}`);
 
+  // Railway lost hostnamen standaard op via het eerste DNS-resultaat, wat vaak
+  // een IPv6-adres (AAAA) is. Railway ondersteunt uitgaand IPv6 niet volledig,
+  // waardoor je ENETUNREACH krijgt gevolgd door een timeout.
+  // Deze lookup-functie dwingt altijd IPv4 (family:4) af, ongeacht de volgorde
+  // van DNS-records — zonder de globale DNS-configuratie van Node.js te wijzigen.
+  function ipv4Lookup(hostname, _opts, callback) {
+    dns.lookup(hostname, { family: 4 }, (err, address, family) => {
+      if (err) return callback(err);
+      console.log(`[mailer] DNS lookup ${hostname} → ${address} (IPv${family})`);
+      callback(null, address, family);
+    });
+  }
+
   return nodemailer.createTransport({
     host:   SMTP_HOST,
     port,
     secure,
     auth:   { user: SMTP_USER, pass: SMTP_PASS },
+
+    // Forceer IPv4: voorkomt ENETUNREACH op Railway bij hosts met AAAA-record.
+    lookup: ipv4Lookup,
 
     // Forceer STARTTLS-upgrade op poort 587 (geen plaintext fallback).
     // Heeft geen effect als secure=true (dan is TLS al actief vanaf connect).
@@ -71,7 +88,6 @@ function createTransport() {
     socketTimeout:     30_000,   // 30s voor inactiviteit tijdens verzending
 
     // Accepteer wildcard- en shared-hosting SSL-certs (zoals mail.mijndomein.nl).
-    // Zonder deze optie weigert Node.js certs die niet exact matchen met de hostname.
     tls: {
       rejectUnauthorized: false,
     },
