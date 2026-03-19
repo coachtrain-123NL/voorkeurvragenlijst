@@ -871,14 +871,19 @@ document.getElementById('btn-submit')?.addEventListener('click', async () => {
   }
 
   // ── 6. Rapport weergeven ──────────────────────────────────────────────────
+  // Werk de URL bij vóór renderResultaat zodat de PDF-downloadknop direct
+  // zichtbaar is: de knop-IIFE in renderResultaat leest window.location.search
+  // op rendertijd, dus de param moet er al in staan voordat renderen start.
+  if (saveOk && responseId) {
+    history.replaceState(null, '', `/?rapport=${responseId}`);
+  }
+
   renderResultaat(r);
   scherm('screen-result');
 
   const sec = document.getElementById('screen-result');
 
   if (saveOk && responseId) {
-    // Werk de URL bij zodat de gebruiker de rapportlink kan bookmarken of delen
-    history.replaceState(null, '', `/?rapport=${responseId}`);
     const rapportUrl = window.location.href;
 
     const bar = document.createElement('div');
