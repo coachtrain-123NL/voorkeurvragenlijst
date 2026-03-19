@@ -86,11 +86,7 @@
     .field-opt{font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0}
     .save-warning{background:#fff8f0;border:1.5px solid #f97316;border-radius:var(--r);padding:14px 18px;margin-bottom:18px;font-size:13px;line-height:1.6;color:#7c2d12}
     .save-warning strong{display:block;margin-bottom:4px;font-size:14px;color:#c2410c}
-    .rapport-link-bar{background:#f0fdf4;border:1.5px solid #16a34a;border-radius:var(--r);padding:12px 16px;margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-    .rapport-link-bar strong{font-size:13px;color:#166534;white-space:nowrap;flex-shrink:0}
-    .rapport-link-bar code{font-size:12px;background:#dcfce7;padding:3px 8px;border-radius:6px;word-break:break-all;flex:1;min-width:0;color:#14532d;cursor:text;font-family:monospace}
-    .rlb-btn{font-size:12px;padding:6px 14px;background:#16a34a;color:#fff;border:none;border-radius:20px;cursor:pointer;font-family:var(--font);font-weight:700;white-space:nowrap;flex-shrink:0}
-    .rlb-btn:hover{background:#15803d}
+
     .rapport-laden{padding:60px;text-align:center;color:var(--muted);font-size:14px}
     .rapport-niet-gevonden{max-width:500px;margin:60px auto;background:#fff8f0;border:1.5px solid #f97316;border-radius:var(--r);padding:24px 28px}
     .rapport-niet-gevonden strong{color:#c2410c;font-size:15px;display:block;margin-bottom:8px}
@@ -883,31 +879,7 @@ document.getElementById('btn-submit')?.addEventListener('click', async () => {
 
   const sec = document.getElementById('screen-result');
 
-  if (saveOk && responseId) {
-    const rapportUrl = window.location.href;
-
-    const bar = document.createElement('div');
-    bar.className = 'rapport-link-bar';
-    bar.innerHTML =
-      '<strong>✓ Rapport opgeslagen</strong>' +
-      `<code>${rapportUrl}</code>` +
-      '<button class="rlb-btn">Kopieer link</button>';
-    bar.querySelector('.rlb-btn').addEventListener('click', function () {
-      navigator.clipboard.writeText(rapportUrl).then(() => {
-        this.textContent = '✓ Gekopieerd';
-        setTimeout(() => { this.textContent = 'Kopieer link'; }, 2000);
-      }).catch(() => {
-        // Fallback: selecteer de code-tekst zodat de gebruiker zelf kan kopiëren
-        const sel = window.getSelection();
-        const range = document.createRange();
-        range.selectNodeContents(bar.querySelector('code'));
-        sel.removeAllRanges();
-        sel.addRange(range);
-      });
-    });
-    sec.insertBefore(bar, sec.firstChild);
-
-  } else if (!saveOk) {
+  if (!saveOk) {
     const warning = document.createElement('div');
     warning.className = 'save-warning';
     warning.innerHTML =
