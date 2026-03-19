@@ -47,11 +47,34 @@ function createTransport() {
       'SMTP-configuratie ontbreekt. Stel SMTP_HOST, SMTP_USER en SMTP_PASS in via .env.'
     );
   }
+
+  const port   = parseInt(process.env.SMTP_PORT, 10) || 587;
+  // SMTP_SECURE=true → directe SSL/TLS op poort 465
+  // SMTP_SECURE=false (default) → STARTTLS-upgrade op poort 587
+  const secure = process.env.SMTP_SECURE === 'true';
+
+  console.log(`[mailer] SMTP config: host=${SMTP_HOST} port=${port} secure=${secure} user=${SMTP_USER}`);
+
   return nodemailer.createTransport({
     host:   SMTP_HOST,
-    port:   parseInt(process.env.SMTP_PORT, 10) || 587,
-    secure: process.env.SMTP_SECURE === 'true',   // true = poort 465 (SSL), false = 587 (STARTTLS)
+    port,
+    secure,
     auth:   { user: SMTP_USER, pass: SMTP_PASS },
+
+    // Forceer STARTTLS-upgrade op poort 587 (geen plaintext fallback).
+    // Heeft geen effect als secure=true (dan is TLS al actief vanaf connect).
+    requireTLS: !secure,
+
+    // Timeouts: voorkom dat Railway de verbinding killt door een hangen socket.
+    connectionTimeout: 15_000,   // 15s om TCP-verbinding op te zetten
+    greetingTimeout:   15_000,   // 15s voor SMTP greeting (220-banner)
+    socketTimeout:     30_000,   // 30s voor inactiviteit tijdens verzending
+
+    // Accepteer wildcard- en shared-hosting SSL-certs (zoals mail.mijndomein.nl).
+    // Zonder deze optie weigert Node.js certs die niet exact matchen met de hostname.
+    tls: {
+      rejectUnauthorized: false,
+    },
   });
 }
 
@@ -338,7 +361,19 @@ async function sendRapportMail({ naam, email, teamCode, rapport, rapportUrl }) {
 
   const transport = createTransport();
 
+  // Verifieer SMTP-verbinding vóór verzending zodat een connectiefout direct
+  // zichtbaar is in de Railway logs (anders krijg je alleen ETIMEDOUT bij sendMail).
+  console.log('[mailer] SMTP verbinding verifiëren…');
+  try {
+    await transport.verify();
+    console.log('[mailer] SMTP verbinding OK ✓');
+  } catch (verifyErr) {
+    console.error('[mailer] SMTP verbinding mislukt:', verifyErr.message);
+    throw verifyErr;
+  }
+
   // Mail 1: persoonlijk rapport naar de invuller
+  console.log(`[mailer] Mail 1 verzenden → ${email}`);
   await transport.sendMail({
     from,
     to:          email,
@@ -347,8 +382,10 @@ async function sendRapportMail({ naam, email, teamCode, rapport, rapportUrl }) {
     text:        buildInvullerText(naam, rapport),
     attachments: [attachment],
   });
+  console.log('[mailer] Mail 1 verstuurd ✓');
 
   // Mail 2: notificatie naar de beheerder (aparte mail zodat invullergegevens zichtbaar zijn)
+  console.log(`[mailer] Mail 2 verzenden → ${adminEmail}`);
   await transport.sendMail({
     from,
     to:          adminEmail,
@@ -357,6 +394,7 @@ async function sendRapportMail({ naam, email, teamCode, rapport, rapportUrl }) {
     text:        buildAdminText(naam, email, teamCode, rapport.datum),
     attachments: [attachment],
   });
+  console.log('[mailer] Mail 2 verstuurd ✓');
 }
 
 module.exports = { sendRapportMail };
