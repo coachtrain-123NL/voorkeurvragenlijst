@@ -17,12 +17,12 @@ const puppeteer = require('puppeteer');
 // ── Spiral Dynamics metadata (identiek aan DATA.si in index.html) ─────────────
 
 const si = {
-  rood:   { hex: '#dc2626', e: '🔴', kern: 'Energie, lef, daadkracht',                  en: 'snel schakelen en knopen doorhakken',            vk: 'te dominant of ongeduldig worden' },
-  blauw:  { hex: '#1d4ed8', e: '🔵', kern: 'Orde, duidelijkheid, rechtvaardigheid',      en: 'heldere afspraken en voorspelbaarheid',           vk: 'regels boven mensen laten gaan' },
-  groen:  { hex: '#16a34a', e: '🟢', kern: 'Menselijkheid, gelijkwaardigheid, harmonie', en: 'iedereen meenemen en verbinden',                  vk: 'besluitvorming uitstellen door eindeloos afstemmen' },
-  geel:   { hex: '#ca8a04', e: '🟡', kern: 'Systeemdenken, flexibiliteit, visie',        en: 'perspectieven verbinden en lange termijn zien',   vk: 'te abstract blijven of keuzes uitstellen' },
-  oranje: { hex: '#d97706', e: '🟠', kern: 'Resultaat, ambitie, kansen',                 en: 'doelen bepalen en scoren met slimme ideeën',      vk: 'te veel competitie of win-focus' },
-  paars:  { hex: '#7c3aed', e: '🟣', kern: 'Geborgenheid, traditie, loyaliteit',         en: 'vertrouwen en veiligheid in de groep',            vk: "te veel vasthouden aan 'zo doen we het hier'" },
+  rood:   { hex: '#dc2626', e: '🔴', kern: 'Energie, lef, daadkracht',                  en: 'snel schakelen en knopen doorhakken',            vk: 'te dominant of ongeduldig worden',                       omschr: 'Actie, moed, onafhankelijkheid.' },
+  blauw:  { hex: '#1d4ed8', e: '🔵', kern: 'Orde, duidelijkheid, rechtvaardigheid',      en: 'heldere afspraken en voorspelbaarheid',           vk: 'regels boven mensen laten gaan',                         omschr: 'Structuur, procedures en discipline.' },
+  groen:  { hex: '#16a34a', e: '🟢', kern: 'Menselijkheid, gelijkwaardigheid, harmonie', en: 'iedereen meenemen en verbinden',                  vk: 'besluitvorming uitstellen door eindeloos afstemmen',     omschr: 'Gemeenschapsgevoel, empathie en samenwerking.' },
+  geel:   { hex: '#ca8a04', e: '🟡', kern: 'Systeemdenken, flexibiliteit, visie',        en: 'perspectieven verbinden en lange termijn zien',   vk: 'te abstract blijven of keuzes uitstellen',               omschr: 'Integratie van perspectieven en flexibiliteit.' },
+  oranje: { hex: '#d97706', e: '🟠', kern: 'Resultaat, ambitie, kansen',                 en: 'doelen bepalen en scoren met slimme ideeën',      vk: 'te veel competitie of win-focus',                        omschr: 'Prestatie, innovatie en strategisch denken.' },
+  paars:  { hex: '#7c3aed', e: '🟣', kern: 'Geborgenheid, traditie, loyaliteit',         en: 'vertrouwen en veiligheid in de groep',            vk: "te veel vasthouden aan 'zo doen we het hier'",           omschr: 'Geborgenheid, groepsverbondenheid en traditie.' },
 };
 
 // ── SVG-driehoek (geporteerd van tekenDriehoek() in index.html) ──────────────
@@ -415,6 +415,46 @@ function buildPdfHtml(r) {
     <div class="section-title">
       <span class="icon">🧭</span> De Dynamische Driehoek: jouw koerskompas
     </div>
+
+    <!-- Toelichting: Wat betekent elke hoek? (online: uitklapblok) -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px">
+      <tr>
+        <td style="width:33%;padding-right:6px;vertical-align:top">
+          <div style="padding:11px 13px;background:#e8e8ff;border-left:4px solid #0000FF;
+                      border-radius:8px;break-inside:avoid">
+            <div style="font-size:10px;font-weight:800;color:#0000FF;margin-bottom:5px">🧭 STRATEGIE</div>
+            <div style="font-size:11px;color:#333;line-height:1.5">
+              <strong>Waarom? Waar naartoe?</strong><br>
+              Visie, missie, waarden, richting en het hogere doel. Je wilt weten waarom iets gedaan wordt en wat het oplevert voor de langere termijn.
+            </div>
+          </div>
+        </td>
+        <td style="width:33%;padding:0 3px;vertical-align:top">
+          <div style="padding:11px 13px;background:#fff8f0;border-left:4px solid #d97706;
+                      border-radius:8px;break-inside:avoid">
+            <div style="font-size:10px;font-weight:800;color:#b45309;margin-bottom:5px">🤝 CULTUUR</div>
+            <div style="font-size:11px;color:#333;line-height:1.5">
+              <strong>Hoe? Wat wil ik beleven?</strong><br>
+              Sfeer, communicatie, omgang, samenwerking en persoonlijke beleving. Je focust op het contact met anderen en de onderlinge verbinding.
+            </div>
+          </div>
+        </td>
+        <td style="width:33%;padding-left:6px;vertical-align:top">
+          <div style="padding:11px 13px;background:#f0fdf4;border-left:4px solid #16a34a;
+                      border-radius:8px;break-inside:avoid">
+            <div style="font-size:10px;font-weight:800;color:#15803d;margin-bottom:5px">⚙️ STRUCTUUR</div>
+            <div style="font-size:11px;color:#333;line-height:1.5">
+              <strong>Wat? Hoe gaan we het doen?</strong><br>
+              Rolverdeling, taken, afspraken, processen en voortgang. Je wilt weten wat er concreet gedaan wordt en wie waarvoor verantwoordelijk is.
+            </div>
+          </div>
+        </td>
+      </tr>
+    </table>
+    <div style="font-size:11px;color:#555;padding:0 0 14px;line-height:1.6">
+      💡 <strong>Tip:</strong> De kracht zit in het samenspel. Wie alleen vanuit één hoek denkt, mist essentiële informatie. Een sterke communicatie raakt alle drie de hoeken.
+    </div>
+
     <table width="100%" cellpadding="0" cellspacing="0">
       <tr>
         <td class="col-half col-half-l" style="vertical-align:middle">
@@ -444,6 +484,25 @@ function buildPdfHtml(r) {
     <div class="section-title">
       <span class="icon">🌀</span> Spiral Dynamics profiel
     </div>
+
+    <!-- Toelichting: De zes waardesystemen (online: uitklapblok) -->
+    <p style="font-size:11px;color:#555;margin-bottom:10px;line-height:1.6">
+      Spiral Dynamics beschrijft hoe mensen en organisaties denken over leiderschap, samenwerken en veranderen.
+      Elk systeem heeft zijn eigen kracht én valkuil. Mensen met <em>verschillende</em> waardesystemen kijken letterlijk anders naar dezelfde situatie.
+    </p>
+    ${Object.entries(si).map(([k, v]) => `
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;
+                  border-bottom:1px solid #f0f0f0;break-inside:avoid">
+        <div style="width:10px;height:10px;border-radius:2px;background:${v.hex};
+                    flex-shrink:0;margin-top:3px"></div>
+        <div style="font-size:11px;line-height:1.5;color:#333">
+          <strong>${v.e} ${k.charAt(0).toUpperCase() + k.slice(1)}</strong>
+          – <em>${v.kern}</em><br>
+          <span style="color:#666">${v.omschr} Valkuil: ${v.vk}.</span>
+        </div>
+      </div>`).join('')}
+    <div style="margin-bottom:16px"></div>
+
     <table width="100%" cellpadding="0" cellspacing="0">
       <tr>
         <td class="col-half col-half-l">
