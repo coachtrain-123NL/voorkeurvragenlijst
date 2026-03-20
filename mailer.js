@@ -5,16 +5,13 @@
 // Verstuurt het persoonlijk rapport als e-mail met PDF-bijlage.
 //
 // Configuratie via omgevingsvariabelen (zie .env.example):
-//   SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS
-//   MAIL_FROM, ADMIN_EMAIL, BASE_URL
+//   BREVO_API_KEY, MAIL_FROM, ADMIN_EMAIL, BASE_URL
 //   MAIL_TEST_MODE=true → logt naar console zonder te versturen
 //
 // Exporteert één publieke functie:
 //   sendRapportMail({ naam, email, teamCode, rapport, rapportUrl })
 // ─────────────────────────────────────────────────────────────────────────────
 
-const nodemailer      = require('nodemailer');
-const dns             = require('dns');
 const { generatePdf } = require('./pdf');
 
 // Minimale Spiral Dynamics-metadata — genoeg voor de e-mailsamenvatting
@@ -41,57 +38,40 @@ function topDriehoek(d) {
   ].sort((a, b) => b.v - a.v);
 }
 
-function createTransport() {
-  const { SMTP_HOST, SMTP_USER, SMTP_PASS } = process.env;
-  if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
-    throw new Error(
-      'SMTP-configuratie ontbreekt. Stel SMTP_HOST, SMTP_USER en SMTP_PASS in via .env.'
-    );
-  }
+// ── Brevo Transactional Email API (HTTPS, poort 443) ─────────────────────────
+//
+// Vervangt Nodemailer/SMTP. Railway blokkeert uitgaand SMTP (587/465);
+// Brevo's REST API gaat via HTTPS en werkt altijd vanuit cloud-omgevingen.
 
-  const port   = parseInt(process.env.SMTP_PORT, 10) || 587;
-  // SMTP_SECURE=true → directe SSL/TLS op poort 465
-  // SMTP_SECURE=false (default) → STARTTLS-upgrade op poort 587
-  const secure = process.env.SMTP_SECURE === 'true';
+function parseSender(from) {
+  // Parseer "Naam <email>" naar { name, email } voor Brevo's sender-object
+  const m = from.match(/^(.*?)\s*<([^>]+)>$/);
+  return m ? { name: m[1].trim(), email: m[2].trim() } : { name: '', email: from.trim() };
+}
 
-  console.log(`[mailer] SMTP config: host=${SMTP_HOST} port=${port} secure=${secure} user=${SMTP_USER}`);
+async function brevoSend({ from, to, subject, html, text, pdfBuffer, pdfName }) {
+  const apiKey = process.env.BREVO_API_KEY;
+  if (!apiKey) throw new Error('BREVO_API_KEY ontbreekt in omgevingsvariabelen.');
 
-  // Railway lost hostnamen standaard op via het eerste DNS-resultaat, wat vaak
-  // een IPv6-adres (AAAA) is. Railway ondersteunt uitgaand IPv6 niet volledig,
-  // waardoor je ENETUNREACH krijgt gevolgd door een timeout.
-  // Deze lookup-functie dwingt altijd IPv4 (family:4) af, ongeacht de volgorde
-  // van DNS-records — zonder de globale DNS-configuratie van Node.js te wijzigen.
-  function ipv4Lookup(hostname, _opts, callback) {
-    dns.lookup(hostname, { family: 4 }, (err, address, family) => {
-      if (err) return callback(err);
-      console.log(`[mailer] DNS lookup ${hostname} → ${address} (IPv${family})`);
-      callback(null, address, family);
-    });
-  }
+  const body = {
+    sender:      parseSender(from),
+    to:          [{ email: to }],
+    subject,
+    htmlContent: html,
+    textContent: text,
+    attachment:  [{ name: pdfName, content: pdfBuffer.toString('base64') }],
+  };
 
-  return nodemailer.createTransport({
-    host:   SMTP_HOST,
-    port,
-    secure,
-    auth:   { user: SMTP_USER, pass: SMTP_PASS },
-
-    // Forceer IPv4: voorkomt ENETUNREACH op Railway bij hosts met AAAA-record.
-    lookup: ipv4Lookup,
-
-    // Forceer STARTTLS-upgrade op poort 587 (geen plaintext fallback).
-    // Heeft geen effect als secure=true (dan is TLS al actief vanaf connect).
-    requireTLS: !secure,
-
-    // Timeouts: voorkom dat Railway de verbinding killt door een hangen socket.
-    connectionTimeout: 15_000,   // 15s om TCP-verbinding op te zetten
-    greetingTimeout:   15_000,   // 15s voor SMTP greeting (220-banner)
-    socketTimeout:     30_000,   // 30s voor inactiviteit tijdens verzending
-
-    // Accepteer wildcard- en shared-hosting SSL-certs (zoals mail.mijndomein.nl).
-    tls: {
-      rejectUnauthorized: false,
-    },
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method:  'POST',
+    headers: { 'api-key': apiKey, 'Content-Type': 'application/json' },
+    body:    JSON.stringify(body),
   });
+
+  if (!res.ok) {
+    const detail = await res.text().catch(() => '');
+    throw new Error(`Brevo API fout ${res.status}: ${detail}`);
+  }
 }
 
 // ── HTML-mail voor de invuller ────────────────────────────────────────────────
@@ -375,40 +355,31 @@ async function sendRapportMail({ naam, email, teamCode, rapport, rapportUrl }) {
     return;
   }
 
-  const transport = createTransport();
-
-  // Verifieer SMTP-verbinding vóór verzending zodat een connectiefout direct
-  // zichtbaar is in de Railway logs (anders krijg je alleen ETIMEDOUT bij sendMail).
-  console.log('[mailer] SMTP verbinding verifiëren…');
-  try {
-    await transport.verify();
-    console.log('[mailer] SMTP verbinding OK ✓');
-  } catch (verifyErr) {
-    console.error('[mailer] SMTP verbinding mislukt:', verifyErr.message);
-    throw verifyErr;
-  }
+  const pdfName = attachment.filename;
 
   // Mail 1: persoonlijk rapport naar de invuller
   console.log(`[mailer] Mail 1 verzenden → ${email}`);
-  await transport.sendMail({
+  await brevoSend({
     from,
-    to:          email,
-    subject:     'Jouw resultaten – Waardenanalyse Samenwerken – De Coachtrain',
-    html:        buildInvullerHtml(naam, rapport, rapportUrl),
-    text:        buildInvullerText(naam, rapport),
-    attachments: [attachment],
+    to:        email,
+    subject:   'Jouw resultaten – Waardenanalyse Samenwerken – De Coachtrain',
+    html:      buildInvullerHtml(naam, rapport, rapportUrl),
+    text:      buildInvullerText(naam, rapport),
+    pdfBuffer,
+    pdfName,
   });
   console.log('[mailer] Mail 1 verstuurd ✓');
 
-  // Mail 2: notificatie naar de beheerder (aparte mail zodat invullergegevens zichtbaar zijn)
+  // Mail 2: notificatie naar de beheerder
   console.log(`[mailer] Mail 2 verzenden → ${adminEmail}`);
-  await transport.sendMail({
+  await brevoSend({
     from,
-    to:          adminEmail,
-    subject:     `[Nieuw rapport] ${naam} – Waardenanalyse`,
-    html:        buildAdminHtml(naam, email, teamCode, rapport),
-    text:        buildAdminText(naam, email, teamCode, rapport.datum),
-    attachments: [attachment],
+    to:        adminEmail,
+    subject:   `[Nieuw rapport] ${naam} – Waardenanalyse`,
+    html:      buildAdminHtml(naam, email, teamCode, rapport),
+    text:      buildAdminText(naam, email, teamCode, rapport.datum),
+    pdfBuffer,
+    pdfName,
   });
   console.log('[mailer] Mail 2 verstuurd ✓');
 }
