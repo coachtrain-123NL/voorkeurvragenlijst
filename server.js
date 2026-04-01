@@ -27,10 +27,10 @@ app.use(express.static(path.join(__dirname)));
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const LETTERS  = ['A','B','C','D','E','F'];
-const N_VRAGEN = 33;
+const N_VRAGEN = 32;
 
 /**
- * Controleert dat raw_answers alle 198 sleutels bevat (q1A t/m q33F)
+ * Controleert dat raw_answers alle 192 sleutels bevat (q1A t/m q32F)
  * en dat elk antwoord een geheel getal 1–6 is, waarbij per vraag
  * de waarden 1 t/m 6 elk precies één keer voorkomen.
  * Zelfde logica als VAL.v1 in de frontend.

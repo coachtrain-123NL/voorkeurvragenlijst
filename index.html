@@ -164,7 +164,8 @@
     @media(max-width:560px){.kw-grid{grid-template-columns:1fr}}
     .kw-item{padding:12px 14px;background:var(--off);border:1px solid var(--border);border-radius:var(--r-sm);border-left:4px solid var(--blue)}
     .kw-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--blue);margin-bottom:5px}
-    .kw-val{font-size:13px;font-weight:500;line-height:1.4}
+    .kw-val{font-size:13px;font-weight:600;line-height:1.4}
+    .kw-toel{font-size:11px;color:var(--muted);margin-top:3px}
 
     .ib{background:var(--blue-lt);border:1.5px solid var(--blue);border-radius:var(--r-sm);padding:15px 18px;margin:14px 0}
     .ib h4{color:var(--blue);font-size:13px;font-weight:700;margin:0 0 7px}
@@ -369,37 +370,38 @@
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 /* DATA */
 const DATA=(()=>{
-  const vragen=["Als je leidinggevende een verandering aankondigt, dan let ik vooral op…","Ik werk het liefst in een ….","Wat werkt het beste om balans te houden tussen werk en privé?","Medewerkers willen zich vaak extra voor het werk inzetten als…","Waar zou je het liefst meer verantwoordelijkheid in willen nemen?","Als we anders gaan werken dan is het belangrijk dat we….","In welke teamrol kom jij het beste tot je recht?","Een goede leidinggevende moet volgens mij vooral….","Onmisbaar in een professioneel team is:","Om goed te kunnen samenwerken binnen werkprocessen, is het belangrijk om","Wij zijn succesvol geweest in een verbeteringsproces als.…","Organisaties/teams veranderen volgens mij het beste als…","Waar liggen voor jou nog uitdagingen?","Om mijn doelen te behalen heb ik van mijn leidinggevende nodig, dat hij/zij mij…","Wat moet er volgens jou na een verandering verbeterd zijn?","Welke waarden nastreven met je team? (vanuit je rol)","Welke waarden nastreven met je team? (vanuit visie)","Welke waarden nastreven met je team? (vanuit beleving)","Welke werkwaarden passen het beste bij jou?","In het werk hecht ik veel waarde aan…","Men vindt mij in mijn werk ….","Prestaties en resultaten zijn het gevolg van…","Kenmerkend voor mijn ideale werksituatie zijn…","Het allerbelangrijkste binnen mijn werk vind ik …","Persoonlijke eigenschappen die anderen in mij zien:","Kritiek die anderen weleens op mij hebben:","Wanneer er druk op de ketel is….","Ik voel mij niet prettig in een werkomgeving met teveel…","Ik erger me vooral aan medewerkers of collega's die te…","Ik voel mij niet thuis bij…","Wat mij zou remmen in mijn werk is…","Als het werk vastloopt, moet je stoppen met…","De opvattingen, afdelingswaarden en normen …"];
-  const ant={1:["de verdeling van taken, rollen en verantwoordelijkheden","de manier waarop hier met elkaar over gecommuniceerd wordt","het effect op samenwerking","het effect op de kwaliteit van het werk","waar ik kom te werken in de organisatie","of het werk voor de hele organisatie een toegevoegde waarde heeft"],2:["flexibele organisatie","goed functionerende organisatie","organisatie waar velen achter het gekozen beleid staan","organisatie waar de medewerkers tevreden zijn","organisatie waar ruimte is voor innovatie en creativiteit","organisatie waarin medewerkers veel delen met elkaar"],3:["merkbare onderlinge betrokkenheid","haalbare en realistische doelen","als de werkdruk afgestemd is op de persoonlijke situatie","financiële zekerheid","als het privéleven afgestemd is op de werksituatie","duidelijke en open communicatie"],4:["er een goed salaris wordt betaald","mensen zich mogen ontwikkelen in hun eigen tempo","er oprechte belangstelling is voor de ander","mensen trots kunnen zijn op het resultaat","duidelijk is wat de bedoeling is","ruimte is voor initiatief en visie"],5:["klanttevredenheid","persoonlijke effectiviteit","samenwerking in teams","procesverbetering","heldere communicatie","het maken van beleid"],6:["vragen hoe het gaat en luisteren","aan de slag gaan met elkaar","nadenken over het doel en de bedoeling","helder communiceren wat het oplevert","rust en duidelijkheid bieden","mensen in hun kracht zetten"],7:["de controleur","de gangmaker","de inspirator","de helper","de analyticus","de visionair"],8:["resultaatgericht zijn","verbinden met mensen","structuur aanbrengen","coachend begeleiden","beleidskeuzes maken","duidelijkheid bieden"],9:["duidelijke afspraken","respect voor elkaar","vertrouwen in elkaar","heldere rollen","gezamenlijke doelen","constructieve feedback"],10:["duidelijkheid te hebben over doelen","voldoende autonomie te hebben","afspraken te maken over samenwerken","ruimte te hebben voor initiatief","tijd en aandacht te hebben voor elkaar","regels en afspraken na te leven"],11:["we afspraken nakomen","de klant tevreden is","iedereen zich heeft kunnen ontwikkelen","er meer plezier is op de werkvloer","processen efficiënter verlopen","er minder klachten zijn"],12:["mensen zich verantwoordelijk voelen","we samenwerken over afdelingen heen","we minder hoeven te controleren","leidinggevenden het goede voorbeeld geven","we minder overleg hebben","er ruimte is voor nieuwe ideeën"],13:["hoe om te gaan met conflicten","hoe ik duidelijker kan zijn","hoe ik anderen kan overtuigen","hoe ik processen kan verbeteren","hoe ik collega's kan motiveren","hoe ik balans hou tussen werk en privé"],14:["ondersteunt waar nodig","heldere verwachtingen stelt","complimenten geeft","meedenkt over mijn ontwikkeling","aanwezig en benaderbaar is","ruimte geeft om fouten te maken"],15:["meer resultaat behaald wordt","de samenwerking verbeterd is","mensen meer verantwoordelijkheid nemen","er meer plezier is in het werk","processen soepeler lopen","iedereen weet waar hij aan toe is"],16:["resultaatgerichtheid","teamspirit","creativiteit","open communicatie","duidelijke afspraken","verantwoordelijkheid"],17:["heldere doelen","vernieuwing en initiatief","betrouwbaarheid","persoonlijke ontwikkeling","professioneel gedrag","visie en strategie"],18:["respect","onderlinge betrokkenheid","afspraken nakomen","ruimte voor creativiteit","transparantie","positieve werksfeer"],19:["macht","orde","harmonie","vrijheid","succes","zorgzaamheid"],20:["helderheid","afspraken","teamgevoel","creativiteit","prestatie","zelfstandigheid"],21:["regels","controle","veiligheid","expressie","resultaat","betrokkenheid"],22:["hiërarchie","stabiliteit","samenwerking","vernieuwing","ambitie","persoonlijke groei"],23:["discipline","verantwoordelijkheid","gelijkwaardigheid","experimenteren","carrière","verbinding"],24:["autoriteit","structuur","teamspirit","visie","doelgerichtheid","empathie"],25:["zekerheid","regels","vertrouwen","originaliteit","succes","zorg"],26:["autoritair gedrag","starheid","soft gedoe","chaos","arrogantie","slachtofferschap"],27:["controle","systeemdenken","zweverigheid","onduidelijkheid","individualisme","emotioneel gedrag"],28:["bevelen","voorschriften","conflicten","vrijblijvendheid","competitie","behoeftigheid"],29:["hiërarchie","conformisme","overlegcultuur","onvoorspelbaarheid","druk","afhankelijkheid"],30:["straf","regels boven mensen","overgevoeligheid","vage ideeën","machtsstrijd","passiviteit"],31:["beheersing","regels volgen","vriendjespolitiek","waan van de dag","doordrammen","klagen"],32:["orde boven alles","blauwdrukken","gebrek aan daadkracht","chaotisch leiderschap","zelfverrijking","afhankelijk opstellen"],33:["structuurblindheid","regelzucht","alles overleggen","wispelturigheid","profilering","emotionele uitbarstingen"]};
-  const dm={1:{s:['E','F'],c:['B','C'],t:['A','D']},2:{s:['C','E'],c:['D','F'],t:['A','B']},3:{s:['B','D'],c:['A','F'],t:['C','E']},4:{s:['A','D'],c:['B','C'],t:['E','F']},5:{s:['A','F'],c:['C','D'],t:['B','E']},6:{s:['B','E'],c:['D','F'],t:['A','C']},7:{s:['C','F'],c:['B','E'],t:['A','D']},8:{s:['A','F'],c:['B','D'],t:['C','E']},9:{s:['C','E'],c:['B','F'],t:['A','D']},10:{s:['A','D'],c:['C','F'],t:['B','E']},11:{s:['B','F'],c:['C','D'],t:['A','E']},12:{s:['A','E'],c:['C','F'],t:['B','D']},13:{s:['B','E'],c:['C','F'],t:['A','D']},14:{s:['B','E'],c:['C','F'],t:['A','D']},15:{s:['C','F'],c:['B','E'],t:['A','D']}};
-  const sv=["rood","blauw","groen","geel","oranje","paars"];
-  const sq={v:[19,20,21,22,23,24,25,26,27,33],a:[28,29,30,31,32]};
+  const vragen=["Als je leidinggevende een verandering aankondigt, dan let ik vooral op…","Ik werk het liefst in een ….","Wat werkt het beste om balans te houden tussen werk en privé?","Medewerkers willen zich vaak extra voor het werk inzetten als…","Waar zou je het liefst meer verantwoordelijkheid in willen nemen?","Als we anders gaan werken dan is het belangrijk dat we….","In welke teamrol kom jij het beste tot je recht?","Een goede leidinggevende moet volgens mij vooral….","Onmisbaar in een professioneel team is:","Om goed te kunnen samenwerken binnen werkprocessen, is het belangrijk om","Wij zijn succesvol geweest in een verbeteringsproces als.…","Organisaties/teams veranderen volgens mij het beste als…","Waar liggen voor jou nog uitdagingen?","Om mijn doelen te behalen heb ik van mijn leidinggevende nodig, dat hij/zij mij…","Wat moet er volgens jou na een verandering verbeterd zijn?","Welke waarden wil je nastreven met je team (vanuit visie)","Welke waarden wil je nastreven met je team (vanuit rollen)","Welke waarden wil je nastreven met je team (vanuit beleving)","Welke werkwaarden passen het beste bij jou?","In het werk hecht ik veel waarde aan…","Men vindt mij in mijn werk ….","Prestaties en resultaten zijn het gevolg van…","Kenmerkend voor mijn ideale werksituatie zijn…","Het allerbelangrijkste binnen mijn werk vind ik …","Persoonlijke eigenschappen die anderen in mij zien:","Kritiek die anderen weleens op mij hebben:","Wanneer er druk op de ketel is….","Ik voel mij niet prettig in een werkomgeving met teveel…","Ik erger me vooral aan medewerkers of collega's die te…","Ik voel mij niet thuis bij…","Wat mij zou remmen in mijn werk is…","Als het werk vastloopt, moet je stoppen met…"];
+  const ant={1:["de verdeling van taken, rollen en verantwoordelijkheden","de manier waarop hier met elkaar over gecommuniceerd wordt","het effect op samenwerking","het effect op de kwaliteit van het werk","waar ik kom te werken in de organisatie","of het werk voor de hele organisatie een toegevoegde waarde heeft"],2:["flexibele organisatie","goed functionerende organisatie","organisatie waar velen achter het gekozen beleid staan","organisatie waar de medewerkers tevreden zijn","organisatie waar ruimte is voor innovatie en creativiteit","organisatie waarin medewerkers veel delen met elkaar"],3:["merkbare onderlinge betrokkenheid","haalbare en realistische doelen","als de werkdruk afgestemd is op de persoonlijke situatie","financiële zekerheid","als het privéleven afgestemd is op de werksituatie","duidelijke en open communicatie"],4:["er duidelijke rollen, taken en verantwoordelijkheden zijn","hun inbreng opgemerkt en gestimuleerd wordt","ze weten waar de afdeling voor gaat en ze de consequenties begrijpen","ze de voordelen voor zichzelf uitgelegd krijgen","ze duidelijke en betrouwbare voorschriften kunnen volgen","ze kunnen samenwerken met mensen waar het mee klikt"],5:["medewerkerstevredenheid","procesverbeteringen","samenwerking in teams","het maken van beleid","het implementeren van nieuwe systemen of werkwijzen","het team vertegenwoordigen"],6:["aan de slag gaan met elkaar","nadenken over het doel en de bedoeling","procedures volgen","vragen hoe het gaat en luisteren","gaan waar we voor staan","helder communiceren"],7:["Organisator","Strateeg","Helper","Sfeermaker","Procesbewaker","Belangenbehartiger"],8:["structuren en controleren","inspireren en communiceren","duidelijke beleidskeuzes maken","coachend begeleiden","resultaatgericht zijn","koers bewaken"],9:["duidelijke afspraken","respectvolle samenwerking","draagvlak","gezamenlijke doelen","vertrouwen in elkaar","heldere rollen"],10:["regels en afspraken na te leven","tijd en aandacht te hebben voor elkaar","duidelijkheid te hebben over doelen","goede taakverdeling te hebben","afspraken te maken over samenwerken","ruimte te hebben voor vernieuwingen"],11:["we afspraken nakomen","er meer toekomstperspectief is ontstaan","iedereen zich heeft kunnen ontwikkelen","er meer plezier is op de werkvloer","processen efficiënter verlopen","de klant tevreden is"],12:["we onze verantwoordelijkheid nemen","we open en eerlijk met elkaar communiceren","we het met de koers eens zijn","we procesgericht werken","we kunnen reflecteren en evalueren","we weten waarom er veranderd wordt"],13:["het openstaan voor feedback over mijn houding en gedrag","het vergroten van mijn professionele deskundigheid","het versterken van mijn persoonlijk leiderschap","het kunnen uitdragen van mijn visie","het afstemmen met mijn collega's","het krachtig kunnen overbrengen van ons teambeleid"],14:["mij betrekt bij het bepalen van de koers","heldere verwachtingen stelt","aanwezig en benaderbaar is","meedenkt over mijn ontwikkeling","inspireert en motiveert","opbouwende feedback geeft"],15:["de manier van werken","de samenwerking","ons imago","de betrouwbaarheid van opleveren","in- en externe communicatie","wederzijdse verwachtingen"],16:["Stabiliteit","Ondernemerschap","Professionaliteit","Duurzaamheid","Marktleiderschap","Continuïteit"],17:["Efficiëntie","Resultaatgerichtheid","Deskundigheid","Vernieuwing","Pro-activiteit","Betrouwbaarheid"],18:["Eerlijkheid","Eigenheid","Collegialiteit","Bezieling","Erkenning","Betrokkenheid"],19:["Duidelijk, betrouwbaar en rechtvaardig","Uitdagend, succesvol en ondernemend","Betrokken, gelijkwaardig en open","Vernieuwend, onderscheidend en zinvol","Aanzien, macht en doortastend","Verbindend, veilig en traditiegetrouw"],20:["secuur, netjes en eerlijk zijn","duidelijk en direct zijn","wijs en ervaren zijn","succesvol en ambitieus zijn","betrokken en verbonden zijn","creatief en vernieuwend zijn"],21:["krachtig en snel","volgzaam en honkvast","mensgericht en zorgzaam","doelgericht en succesvol","eerlijk en streng","tolerant en creatief"],22:["het toepassen van procedures en regels","het uitvoeren van opgedragen taken","het gebruik maken van innovatieve ontwikkelingen","het vertrouwen op beproefde tradities en ervaringen","een veilige en stabiele samenwerking","aantoonbare successen en uitdagende doelen"],23:["een familiaire organisatie waar men zich veilig en thuis voelt","een lijnorganisatie met focus op resultaat","een professionele projectorganisatie waarin experts samenwerken","een netwerkorganisatie waarin prestatie en competitie centraal staan","een mensgerichte organisatie gericht op optimale samenwerking en consensus","een traditionele organisatie gericht op beheersing van kwaliteit en kwantiteit"],24:["dat we doelgerichte beslissingen nemen","dat iedereen verantwoordelijk is voor het eigen werk","dat we onderling tevreden zijn over onze manier van samenwerken","dat we elkaar bijstaan en bij de groep blijven horen","dat er vooruitgang geboekt wordt en we uitdagingen durven aangaan","dat we creatief blijven en we ons persoonlijk blijven ontwikkelen"],25:["voorzichtige benadering en bescheiden opstelling","laat niet over zich heen lopen","verbetert eigen fouten, is eerlijk en soms streng","strategisch slim, houdt eigenbelang altijd in achterhoofd","praat graag met anderen en helpt ze","gaat vaak eigen gang en is intelligent"],26:["haantje de voorste, fel","wil teveel, overvraagt","overgevoelig, hulpvaardig","veroordelend, streng","ondergeschikt, afhankelijk","gereserveerd, arrogant"],27:["moet ieder de taak doen waarvoor hij/zij aangenomen is","stort ik me erop en sla me er doorheen","ontstaan ook veranderingen en vernieuwingen","wordt er vaak vertrouwd op beslissingen van het hoger kader","kan ik goed scoren, kom ik tot mijn beste prestaties","zorgen we samen dat de sfeer er niet onder leidt"],28:["regels, rapportage en het beleid op papier","ruzie maken, macht, invloed uitoefenen","eentonigheid en kalm blijven","veel vergelijkingen met vroeger en eerdere leidinggevenden","de nadruk leggen op geld, winst en resultaat","het gepraat over ieders eigen stokpaardje of affiniteit"],29:["dominant, agressief zijn","angstig overkomen","praterig zijn","hebberig, bezitterig doen","pietje precies zijn","eigenwijs, vrijpostig gedrag vertonen"],30:["een baasjes-cultuur, de nadruk op rollen","impulsieve, opvliegende karakters","abstracte theorieën en ingewikkelde ideeën","eerbied voor wat vroeger gepresteerd is","elkaar voortdurend willen begrijpen en aanvoelen","korte termijn succes en winstbejag"],31:["een vaste werkplek, traditioneel vakmanschap","onderdrukking, witte voetjes halen, vriendjes met de baas","alles volgens de regels en afspraken, de regelmaat","de targets, het najagen van steeds hogere resultaten","alles bespreekbaar houden, steeds in vergadering en groepen zitten","de toegenomen complexiteit en talloze nieuwigheden"],32:["alleen je plicht en het voorgeschreven werk te doen","de sterkste en kartrekker te willen zijn","nog meer te willen veranderen","het navragen bij leidinggevenden of meer ervaren collega's","onderlinge competities","elkaar voortdurend te willen helpen en ondersteunen"]};
+  const dm={1:{s:['E','F'],c:['B','C'],t:['A','D']},2:{s:['C','E'],c:['D','F'],t:['A','B']},3:{s:['B','D'],c:['A','F'],t:['C','E']},4:{s:['C','D'],c:['B','F'],t:['A','E']},5:{s:['D','F'],c:['A','C'],t:['B','E']},6:{s:['B','E'],c:['D','F'],t:['A','C']},7:{s:['B','F'],c:['C','D'],t:['A','E']},8:{s:['C','F'],c:['B','D'],t:['A','E']},9:{s:['C','D'],c:['B','E'],t:['A','F']},10:{s:['C','F'],c:['B','E'],t:['A','D']},11:{s:['B','F'],c:['C','D'],t:['A','E']},12:{s:['C','F'],c:['B','E'],t:['A','D']},13:{s:['D','F'],c:['A','E'],t:['B','C']},14:{s:['A','D'],c:['C','E'],t:['B','F']},15:{s:['C','F'],c:['B','E'],t:['A','D']}};
+  const sm={19:{A:'blauw',B:'oranje',C:'groen',D:'geel',E:'rood',F:'paars'},20:{A:'blauw',B:'rood',C:'paars',D:'oranje',E:'groen',F:'geel'},21:{A:'rood',B:'paars',C:'groen',D:'oranje',E:'blauw',F:'geel'},22:{A:'blauw',B:'rood',C:'geel',D:'paars',E:'groen',F:'oranje'},23:{A:'paars',B:'rood',C:'geel',D:'oranje',E:'groen',F:'blauw'},24:{A:'rood',B:'blauw',C:'groen',D:'paars',E:'oranje',F:'geel'},25:{A:'paars',B:'oranje',C:'blauw',D:'rood',E:'groen',F:'geel'},26:{A:'oranje',B:'blauw',C:'groen',D:'rood',E:'paars',F:'geel'},27:{A:'blauw',B:'rood',C:'geel',D:'paars',E:'oranje',F:'groen'},28:{A:'blauw',B:'rood',C:'geel',D:'paars',E:'oranje',F:'groen'},29:{A:'rood',B:'paars',C:'groen',D:'oranje',E:'blauw',F:'geel'},30:{A:'blauw',B:'rood',C:'geel',D:'paars',E:'groen',F:'oranje'},31:{A:'paars',B:'rood',C:'blauw',D:'oranje',E:'groen',F:'geel'},32:{A:'blauw',B:'rood',C:'geel',D:'paars',E:'oranje',F:'groen'}};
+  const sq={v:[19,20,21,22,23,24,25,26,27],a:[28,29,30,31,32]};
   const si={rood:{hex:"#dc2626",e:"🔴",kern:"Energie, lef, daadkracht",en:"snel schakelen en knopen doorhakken",vk:"te dominant of ongeduldig worden",omschr:"Actie, moed, onafhankelijkheid."},blauw:{hex:"#1d4ed8",e:"🔵",kern:"Orde, duidelijkheid, rechtvaardigheid",en:"heldere afspraken en voorspelbaarheid",vk:"regels boven mensen laten gaan",omschr:"Structuur, procedures en discipline."},groen:{hex:"#16a34a",e:"🟢",kern:"Menselijkheid, gelijkwaardigheid, harmonie",en:"iedereen meenemen en verbinden",vk:"besluitvorming uitstellen door eindeloos afstemmen",omschr:"Gemeenschapsgevoel, empathie en samenwerking."},geel:{hex:"#ca8a04",e:"🟡",kern:"Systeemdenken, flexibiliteit, visie",en:"perspectieven verbinden en lange termijn zien",vk:"te abstract blijven of keuzes uitstellen",omschr:"Integratie van perspectieven en flexibiliteit."},oranje:{hex:"#d97706",e:"🟠",kern:"Resultaat, ambitie, kansen",en:"doelen bepalen en scoren met slimme ideeën",vk:"te veel competitie of win-focus",omschr:"Prestatie, innovatie en strategisch denken."},paars:{hex:"#7c3aed",e:"🟣",kern:"Geborgenheid, traditie, loyaliteit",en:"vertrouwen en veiligheid in de groep",vk:"te veel vasthouden aan 'zo doen we het hier'",omschr:"Geborgenheid, groepsverbondenheid en traditie."}};
-  return{vragen,ant,dm,sv,sq,si};
+  return{vragen,ant,dm,sm,sq,si};
 })();
 
 /* SCORE ENGINE */
 const SE=(()=>{
   function driehoek(m){const s={strategie:0,cultuur:0,structuur:0};for(let q=1;q<=15;q++){const mp=DATA.dm[q];['A','B','C','D','E','F'].forEach(l=>{const v=m[`q${q}${l}`];if(v==null)return;if(mp.s.includes(l))s.strategie+=v;else if(mp.c.includes(l))s.cultuur+=v;else s.structuur+=v;});}return s;}
-  function spiral(m){const v={rood:0,blauw:0,groen:0,geel:0,oranje:0,paars:0},a={rood:0,blauw:0,groen:0,geel:0,oranje:0,paars:0};DATA.sq.v.forEach(q=>['A','B','C','D','E','F'].forEach((l,i)=>{const x=m[`q${q}${l}`];if(x!=null)v[DATA.sv[i]]+=x;}));DATA.sq.a.forEach(q=>['A','B','C','D','E','F'].forEach((l,i)=>{const x=m[`q${q}${l}`];if(x!=null)a[DATA.sv[i]]+=x;}));return{v,a};}
+  function spiral(m){const v={rood:0,blauw:0,groen:0,geel:0,oranje:0,paars:0},a={rood:0,blauw:0,groen:0,geel:0,oranje:0,paars:0};DATA.sq.v.forEach(q=>['A','B','C','D','E','F'].forEach(l=>{const x=m[`q${q}${l}`];if(x!=null)v[DATA.sm[q][l]]+=x;}));DATA.sq.a.forEach(q=>['A','B','C','D','E','F'].forEach(l=>{const x=m[`q${q}${l}`];if(x!=null)a[DATA.sm[q][l]]+=x;}));return{v,a};}
   function tw(m,q,n=3){const a=DATA.ant[q];return['A','B','C','D','E','F'].map((l,i)=>({w:a[i],s:m[`q${q}${l}`]||0})).sort((a,b)=>b.s-a.s).slice(0,n);}
-  function calc(m,naam,email){const sp=spiral(m);return{naam,email,datum:new Date().toLocaleDateString('nl-NL',{year:'numeric',month:'long',day:'numeric'}),driehoek:driehoek(m),voorkeur:sp.v,allergie:sp.a,kw:{structuur:tw(m,16),strategie:tw(m,17),cultuur:tw(m,18)},iz:{org:tw(m,2,1)[0]?.w,rol:tw(m,7,1)[0]?.w,uitd:tw(m,13,1)[0]?.w}};}
+  function bestAnswer(m,questions){let best=null,bestScore=-1;questions.forEach(q=>{['A','B','C','D','E','F'].forEach((l,i)=>{const s=m[`q${q}${l}`];if(s!=null&&s>bestScore){bestScore=s;best=DATA.ant[q]?.[i]??null;}});});return bestScore>=5?best:null;}
+  function calc(m,naam,email){const sp=spiral(m);return{naam,email,datum:new Date().toLocaleDateString('nl-NL',{year:'numeric',month:'long',day:'numeric'}),driehoek:driehoek(m),voorkeur:sp.v,allergie:sp.a,kw:{strategie:tw(m,16),structuur:tw(m,17),cultuur:tw(m,18)},iz:{org:tw(m,2,1)[0]?.w,rol:tw(m,7,1)[0]?.w,uitd:tw(m,13,1)[0]?.w,topVoorkeurTekst:bestAnswer(m,DATA.sq.v),topAllergeTekst:bestAnswer(m,DATA.sq.a)}}}
   return{calc};
 })();
 
 /* VALIDATIE */
 const VAL=(()=>{
   function v1(q){const ws=[];for(const l of['A','B','C','D','E','F']){const i=document.querySelector(`[name="q${q}${l}"]`);if(!i||i.value==='')return{ok:false,dup:[],r:'Niet alle velden ingevuld.'};const n=parseInt(i.value);if(isNaN(n)||n<1||n>6)return{ok:false,dup:[],r:'Vul waarden 1–6 in.'};ws.push(n);}const u=new Set(ws);if(u.size!==6){const d=ws.filter((v,i)=>ws.indexOf(v)!==i);return{ok:false,dup:[...new Set(d)],r:`Dubbele waarde(n): ${[...new Set(d)].join(', ')}.`};}return{ok:true,dup:[],r:'✓ Correct'};}
-  function alle(){const f=[];for(let q=1;q<=33;q++){const r=v1(q);if(!r.ok)f.push({q,r:r.r});}return f;}
+  function alle(){const f=[];for(let q=1;q<=32;q++){const r=v1(q);if(!r.ok)f.push({q,r:r.r});}return f;}
   function upd(q){const r=v1(q);const blok=document.getElementById(`vb-${q}`);const fb=document.getElementById(`fb-${q}`);const ls=['A','B','C','D','E','F'];if(!blok)return;ls.forEach(l=>{const i=document.querySelector(`[name="q${q}${l}"]`);if(!i||i.value===''){i?.classList.remove('ok','dup');return;}const v=parseInt(i.value);i.classList.toggle('ok',r.ok);i.classList.toggle('dup',!r.ok&&r.dup.includes(v));});const any=ls.some(l=>{const i=document.querySelector(`[name="q${q}${l}"]`);return i&&i.value!=='';});blok.classList.toggle('has-error',!r.ok&&any);blok.classList.toggle('is-valid',r.ok);if(fb){if(!any){fb.textContent='';return;}fb.className=`vfb ${r.ok?'ok':'err'}`;fb.textContent=r.r;}prog();}
-  function prog(){let c=0;for(let q=1;q<=33;q++){if(v1(q).ok)c++;}const p=Math.round((c/33)*100);const f=document.getElementById('prog-fill');const pe=document.getElementById('prog-pct');const pt=document.getElementById('prog-txt');if(f)f.style.width=p+'%';if(pe)pe.textContent=p+'%';if(pt)pt.textContent=`${c} van 33 vragen correct ingevuld`;}
+  function prog(){let c=0;for(let q=1;q<=32;q++){if(v1(q).ok)c++;}const p=Math.round((c/32)*100);const f=document.getElementById('prog-fill');const pe=document.getElementById('prog-pct');const pt=document.getElementById('prog-txt');if(f)f.style.width=p+'%';if(pe)pe.textContent=p+'%';if(pt)pt.textContent=`${c} van 32 vragen correct ingevuld`;}
   return{v1,alle,upd};
 })();
 
 /* RENDER VRAGEN */
 function renderVragen(){
   const c=document.getElementById('vragen-container');if(!c)return;c.innerHTML='';
-  for(let q=1;q<=33;q++){
+  for(let q=1;q<=32;q++){
     const b=document.createElement('div');b.className='vraag-blok fade';b.id=`vb-${q}`;b.style.animationDelay=Math.min(q*.017,.34)+'s';
     const rijen=(DATA.ant[q]||[]).map((t,i)=>{const l=String.fromCharCode(65+i);return`<div class="ar"><div class="al">${l}</div><div class="at">${t}</div><input type="number" class="si" name="q${q}${l}" min="1" max="6" inputmode="numeric" pattern="[0-9]*" placeholder="—" autocomplete="off" data-q="${q}"></div>`;}).join('');
     b.innerHTML=`<div class="vh"><div class="vnr">${q}</div><div class="vtekst">${DATA.vragen[q-1]}</div></div><div>${rijen}</div><div class="vfb" id="fb-${q}"></div>`;
@@ -409,7 +411,7 @@ function renderVragen(){
 }
 
 /* SVG DRIEHOEK */
-function tekenDriehoek(el,s){
+function tekenDriehoek(el,s,kw){
   const W=480,H=340,NS='http://www.w3.org/2000/svg';
   el.setAttribute('viewBox',`0 0 ${W} ${H}`);el.setAttribute('width',W);el.setAttribute('height',H);el.innerHTML='';
   const cx=W/2,cy=H/2+20,R=118;
@@ -423,9 +425,10 @@ function tekenDriehoek(el,s){
   [oS,oT,oC].forEach(p=>{el.appendChild(mk('line',{x1:cx,y1:cy,x2:p.x,y2:p.y,stroke:'#eee','stroke-width':'1'}));});
   el.appendChild(mk('polygon',{points:`${iS.x},${iS.y} ${iT.x},${iT.y} ${iC.x},${iC.y}`,fill:'rgba(0,0,255,0.16)',stroke:'#0000FF','stroke-width':'2.5'}));
   [iS,iT,iC].forEach(p=>{el.appendChild(mk('circle',{cx:p.x,cy:p.y,r:'7',fill:'#0000FF'}));el.appendChild(mk('circle',{cx:p.x,cy:p.y,r:'11',fill:'none',stroke:'#2EF4CD','stroke-width':'2'}));});
-  [{p:oS,dx:0,dy:-32,l:'Strategie',v:s.strategie},{p:oT,dx:-14,dy:24,l:'Structuur',v:s.structuur},{p:oC,dx:14,dy:24,l:'Cultuur',v:s.cultuur}].forEach(({p,dx,dy,l,v})=>{
+  [{p:oS,dx:0,dy:-32,l:'Strategie',v:s.strategie,kl:kw&&kw.strategie},{p:oT,dx:-14,dy:24,l:'Structuur',v:s.structuur,kl:kw&&kw.structuur},{p:oC,dx:14,dy:24,l:'Cultuur',v:s.cultuur,kl:kw&&kw.cultuur}].forEach(({p,dx,dy,l,v,kl})=>{
     const t1=mk('text',{x:p.x+dx,y:p.y+dy,'text-anchor':'middle','font-size':'14','font-weight':'700',fill:'#111','font-family':"'Montserrat',Arial,sans-serif"});t1.textContent=l;el.appendChild(t1);
     const t2=mk('text',{x:p.x+dx,y:p.y+dy+18,'text-anchor':'middle','font-size':'22','font-weight':'900',fill:'#0000FF','font-family':"'Montserrat',Arial,sans-serif"});t2.textContent=v;el.appendChild(t2);
+    if(kl){const t3=mk('text',{x:p.x+dx,y:p.y+dy+34,'text-anchor':'middle','font-size':'11','font-weight':'600',fill:'#555','font-family':"'Montserrat',Arial,sans-serif"});t3.textContent=kl;el.appendChild(t3);}
   });
 }
 
@@ -447,36 +450,80 @@ function renderResultaat(r){
   const [p1,p2,p3]=vS;
   const dAB=A.v-B.v,dBC=B.v-C.v,sd12=p1[1]-p2[1],sd23=p2[1]-p3[1];
 
-  const drToel={
-    strategie:"Je denkt van nature in termen van richting, visie en het hogere doel. Je wilt weten <em>waarom</em> iets gedaan wordt. Pas op: zonder aandacht voor Cultuur en Structuur kun je anderen verliezen in abstracte plannen.",
-    cultuur:"Je focust op de beleving en samenwerking. Je wilt dat het goed voelt én dat iedereen meekomt. Pas op: zonder Strategie en Structuur kan dit leiden tot veel overleg en weinig besluitvorming.",
-    structuur:"Je bent actiegericht en wil weten <em>wat</em> er concreet gedaan wordt. Je kunt goed plannen en organiseren. Pas op: zonder Strategie kan dit leiden tot uitvoering zonder richting."
+  // ── Verbeterde conclusielogica ─────────────────────────────────────────
+  const tot=A.v+B.v+C.v;
+  const spread=A.v-C.v;
+  const pctA=Math.round(A.v/tot*100),pctB=Math.round(B.v/tot*100),pctC=Math.round(C.v/tot*100);
+  const blindeVlek=pctC<28;
+  const stilleHoek=pctC<25;
+  const spreadNiveau=spread<15?'gebalanceerd':spread<=30?'herkenbaar':'duidelijk';
+  const kwA=r.kw[A.k][0]?.w||'',kwC=r.kw[C.k][0]?.w||'';
+  const combKracht={
+    'strategie+rood':  'richting bepalen met daadkracht en tempo',
+    'strategie+paars': 'koers uitzetten die de groep meeneemt en bindt',
+    'strategie+blauw': 'betrouwbare richting neerzetten via heldere kaders',
+    'strategie+oranje':'doelen stellen en kansen vertalen naar resultaat',
+    'strategie+groen': 'visie ontwikkelen die aansluit bij ieders behoeften',
+    'strategie+geel':  'systemisch denken en verbinding zoeken in complexiteit',
+    'cultuur+rood':    'energie brengen en mensen direct aanspreken',
+    'cultuur+paars':   'samenhorigheid creëren en de groep bij elkaar houden',
+    'cultuur+blauw':   'heldere omgangsregels stellen en verwachtingen afstemmen',
+    'cultuur+oranje':  'ambitie aanwakkeren en prestaties vieren met het team',
+    'cultuur+groen':   'verbinden, luisteren en zorgen dat iedereen meekomt',
+    'cultuur+geel':    'diversiteit in denken omarmen en nieuwe perspectieven benutten',
+    'structuur+rood':  'snel schakelen en met daadkracht doorpakken',
+    'structuur+paars': 'vertrouwde werkwijzen bewaken en continuïteit brengen',
+    'structuur+blauw': 'processen organiseren en afspraken helder bewaken',
+    'structuur+oranje':'efficiënt werken en resultaat meetbaar maken',
+    'structuur+groen': 'rollen verdelen op basis van talent en samenwerking',
+    'structuur+geel':  'flexibele systemen bouwen die meegroeien met de situatie',
   };
-  const dInterp=dAB>=7
-    ?`<p><strong>Dominante voorkeur: ${A.l} (${A.v})</strong>${r.kw[A.k]?.[0]?.w?` – kernwaarde: <em>${r.kw[A.k][0].w}</em>`:''}.</p>
-      <p style="font-size:13px;color:var(--mid)">${drToel[A.k]}</p>
-      <p><strong>Mini-actie:</strong> plan bewust een moment voor ${B.l.toLowerCase()} en ${C.l.toLowerCase()} (5–10 min elk) bij je volgende beslissing.</p>`
-    :dBC>=7
-    ?`<p><strong>Dubbele voorkeur: ${A.l} (${A.v}) & ${B.l} (${B.v})</strong>.</p>
-      <p style="font-size:13px;color:var(--mid)">Je combineert ${A.l.toLowerCase()} en ${B.l.toLowerCase()}. Dat is een kracht. Zorg wel dat ${C.l.toLowerCase()} niet structureel wordt overgeslagen – want ook die hoek brengt waardevolle informatie.</p>
-      <p><strong>Aandachtspunt:</strong> voeg aan je beslischecklist één vraag toe voor ${C.l.toLowerCase()}.</p>`
-    :`<p><strong>Gebalanceerd profiel</strong> – je schakelt makkelijk tussen alle drie.</p>
-      <p style="font-size:13px;color:var(--mid)">Dat geeft je overzicht en communicatieve flexibiliteit. Tip: spreek met je team vooraf een besluitvormingsproces af zodat iedereen weet welke hoek wanneer aan de beurt is.</p>`;
-
+  const ckKracht=combKracht[A.k+'+'+p1[0]]||A.l.toLowerCase()+' inbrengen';
+  const alleActie={
+    rood:  'stel jezelf de vraag: wat heeft de ander nodig voordat ik doorpak?',
+    paars: 'zoek bewust verbinding buiten je vaste kring',
+    blauw: 'laat een overleg eens verlopen zonder strakke agenda',
+    oranje:'houd bij een volgende keuze de relatie bewust zwaarder mee',
+    groen: 'neem een besluit ook als niet iedereen het eens is',
+    geel:  'kies één ding en voer het af, ook als het niet perfect is',
+  };
+  const actieAllergie=alleActie[aS[0][0]]||'maak één concrete afspraak met jezelf';
+  const drToelNw={
+    strategie:{
+      gebalanceerd:'Je hebt een lichte voorkeur voor richting en visie, maar schakelt ook mee in uitvoering en verbinding.',
+      herkenbaar:  'Je denkt van nature in richting en doel. Pas op: zonder aandacht voor cultuur en structuur kunnen plannen blijven hangen.',
+      duidelijk:   'Richting en visie staan centraal in hoe jij kijkt en communiceert. Risico: abstractie wint het soms van uitvoering en verbinding.',
+    },
+    cultuur:{
+      gebalanceerd:'Je hebt een lichte voorkeur voor samenwerking en beleving, maar verliest richting en uitvoering niet uit het oog.',
+      herkenbaar:  'Samenwerking en onderlinge verbinding zijn jouw referentiepunt. Pas op: zonder strategie en structuur kan dit leiden tot veel overleg.',
+      duidelijk:   'Beleving en relatie staan centraal. Risico: besluiten worden uitgesteld zolang het niet \"goed voelt\" voor iedereen.',
+    },
+    structuur:{
+      gebalanceerd:'Je hebt een lichte voorkeur voor duidelijkheid en uitvoering, maar behoudt ook oog voor richting en mensen.',
+      herkenbaar:  'Duidelijkheid, rollen en uitvoering zijn jouw startpunt. Pas op: actie zonder richting leidt tot efficiënt werken aan het verkeerde.',
+      duidelijk:   'Aanpak en uitvoering staan centraal in hoe jij handelt. Risico: je beweegt voordat de richting en het draagvlak er zijn.',
+    },
+  };
   const sk1=DATA.si[p1[0]];
+  const dInterp=spreadNiveau==='gebalanceerd'
+    ?`<p><strong>Gebalanceerd profiel</strong> – je schakelt tussen ${A.l.toLowerCase()}, ${B.l.toLowerCase()} en ${C.l.toLowerCase()} (${pctA}% / ${pctB}% / ${pctC}%).</p>
+      <p style="font-size:13px;color:var(--mid)">${drToelNw[A.k].gebalanceerd} Maak je aanpak explicieter zodat anderen weten welke hoek jij op dat moment inzet.</p>`
+    :`<p><strong>${spreadNiveau==='herkenbaar'?'Herkenbare':'Duidelijke'} voorkeur voor ${A.l} (${pctA}%)</strong>${kwA?` – kernwaarde: <em>${kwA}</em>`:''}.${blindeVlek?` <em>${C.l} (${pctC}%) is mogelijk een blinde vlek.</em>`:''}</p>
+      <p style="font-size:13px;color:var(--mid)">${drToelNw[A.k][spreadNiveau]}</p>
+      ${r.iz.topVoorkeurTekst?`<p style="font-size:13px;color:var(--mid)">In je antwoorden komt dit terug in je nadruk op: '<em>${r.iz.topVoorkeurTekst}</em>'.</p>`:''}` ;
   const sInterp=sd12>=7
-    ?`<p><strong>Dominante voorkeur: ${sk1?.e} ${p1[0]} (${p1[1]})</strong> – ${sk1?.kern}.<br>
-      Je krijgt energie van <em>${sk1?.en}</em> en dat merk je in hoe je omgaat met verandering, leiderschap en samenwerking.</p>
-      <p style="font-size:13px;color:var(--mid)">Mensen met een ander dominant waardesysteem kijken letterlijk anders naar dezelfde situatie – ze waarderen andere dingen en reageren anders op leiderschapsstijlen. Jouw voorkeur geeft inzicht in waar jij het beste rendeert.</p>`
+    ?`<p><strong>${sk1?.e} ${p1[0].charAt(0).toUpperCase()+p1[0].slice(1)} (${p1[1]})</strong> – ${sk1?.kern}.</p>
+      <p style="font-size:13px;color:var(--mid)">${sk1?.omschr||''}</p>
+      ${r.iz.topVoorkeurTekst?`<p style="font-size:13px;color:var(--mid)">In je antwoorden kies je voor: '<em>${r.iz.topVoorkeurTekst}</em>'.</p>`:''}`
     :sd23>=7
-    ?`<p><strong>Dubbele voorkeur: ${sk1?.e} ${p1[0]} & ${DATA.si[p2[0]]?.e} ${p2[0]}</strong>.<br>
-      Je haalt kracht uit zowel <em>${sk1?.kern}</em> als <em>${DATA.si[p2[0]]?.kern}</em>. Je kunt schakelen tussen beiden, afhankelijk van de context.</p>
-      <p style="font-size:13px;color:var(--mid)">Dit maakt je flexibel in samenwerking – je begrijpt meerdere perspectieven. Zorg wel dat je duidelijk maakt vanuit welke waarden je op dat moment handelt.</p>`
-    :`<p><strong>Gebalanceerd profiel</strong> – je schakelt gemakkelijk tussen meerdere waardesystemen.</p>
-      <p style="font-size:13px;color:var(--mid)">Dit geeft je brede inzetbaarheid. Nadeel kan zijn dat anderen minder goed voorspellen vanuit welke waarden jij handelt. Expliciteer in teamgesprekken welke modus je gebruikt.</p>`;
-
-  const drZin=dAB>=7?`Koerskompas: sterke voorkeur voor <strong>${A.l} (${A.v})</strong>.`:dBC>=7?`Koerskompas: dubbele focus op <strong>${A.l}</strong> en <strong>${B.l}</strong>.`:`Koerskompas: <strong>gebalanceerd profiel</strong>.`;
-  const spZin=`Spiral: drijfveer <strong>${sk1?.e||''} ${p1[0]} (${p1[1]})</strong>, allergie <strong>${DATA.si[aS[0][0]]?.e||''} ${aS[0][0]} (${aS[0][1]})</strong>.`;
+    ?`<p><strong>Dubbele voorkeur: ${sk1?.e} ${p1[0]} &amp; ${DATA.si[p2[0]]?.e} ${p2[0]}</strong> (${p1[1]} / ${p2[1]}).<br>Je haalt kracht uit zowel <em>${sk1?.kern}</em> als <em>${DATA.si[p2[0]]?.kern}</em>.</p>`
+    :`<p><strong>Geen dominante kleur.</strong> Breed inzetbaar, maar maak je voorkeur explicieter in teamgesprekken.</p>`;
+  const drZin=spreadNiveau==='gebalanceerd'
+    ?`<strong>${A.l} ${pctA}%&nbsp;·&nbsp;${B.l} ${pctB}%&nbsp;·&nbsp;${C.l} ${pctC}%</strong> — gebalanceerd profiel.`
+    :`<strong>${A.l} ${pctA}%&nbsp;·&nbsp;${B.l} ${pctB}%&nbsp;·&nbsp;${C.l} ${pctC}%</strong>${stilleHoek?' — '+C.l.toLowerCase()+' is de stille hoek':blindeVlek?' — '+C.l.toLowerCase()+' verdient bewuste aandacht':''}. `;
+  const spZin=`${sk1?.e||''} ${p1[0].charAt(0).toUpperCase()+p1[0].slice(1)} &nbsp;·&nbsp; allergie: ${DATA.si[aS[0][0]]?.e||''} ${aS[0][0]}.`;
+  const conclusie3=`<p><strong>Profiel:</strong> ${spreadNiveau==='gebalanceerd'?'Gebalanceerd – je schakelt soepel tussen alle drie hoeken':(spreadNiveau==='herkenbaar'?'Herkenbare':'Duidelijke')+' voorkeur voor '+A.l.toLowerCase()+(kwA?' ('+kwA+')':'')+(stilleHoek?', '+C.l.toLowerCase()+' is de stille hoek':'')}.</p><p><strong>Kracht:</strong> ${ckKracht}.</p><p><strong>Aandacht:</strong> ${(drToelNw[A.k][spreadNiveau].split('.')[1]?.trim()||drToelNw[A.k][spreadNiveau].split('.')[0]).toLowerCase()}.</p>`;
 
   const t3HTML=(arr,isA)=>arr.slice(0,3).map(([k,s],i)=>{const inf=DATA.si[k];return`<div class="t3"><div class="rb ${['r1','r2','r3'][i]}">${i+1}</div><div class="kd" style="background:${inf?.hex}"></div><div class="t3-text"><div class="t3-lbl">${inf?.e||''} ${k[0].toUpperCase()+k.slice(1)}</div><div class="t3-sub">${inf?.kern||''}</div></div><div class="t3-sc" style="color:${inf?.hex}">${s}</div></div>`;}).join('');
 
@@ -519,9 +566,9 @@ function renderResultaat(r){
     <div class="drk-center"><svg id="driehoekSVG" style="max-width:480px;width:100%"></svg></div>
     <div class="sec-label">Kernwaarden per hoek</div>
     <div class="kw-grid">
-      <div class="kw-item"><div class="kw-label">Structuur</div><div class="kw-val">${r.kw.structuur.slice(0,2).map(w=>w.w).join(' · ')}</div></div>
-      <div class="kw-item"><div class="kw-label">Strategie</div><div class="kw-val">${r.kw.strategie.slice(0,2).map(w=>w.w).join(' · ')}</div></div>
-      <div class="kw-item"><div class="kw-label">Cultuur</div><div class="kw-val">${r.kw.cultuur.slice(0,2).map(w=>w.w).join(' · ')}</div></div>
+      <div class="kw-item"><div class="kw-label">Strategie</div><div class="kw-val">${r.kw.strategie[0]?.w||'–'}</div><div class="kw-toel">Je meest bepalende waarde bij strategiekeuzes</div></div>
+      <div class="kw-item"><div class="kw-label">Structuur</div><div class="kw-val">${r.kw.structuur[0]?.w||'–'}</div><div class="kw-toel">Je meest bepalende waarde bij structuurkeuzes</div></div>
+      <div class="kw-item"><div class="kw-label">Cultuur</div><div class="kw-val">${r.kw.cultuur[0]?.w||'–'}</div><div class="kw-toel">Je meest bepalende waarde bij cultuurkeuzes</div></div>
     </div>
     <div class="ib"><h4>Jouw interpretatie</h4>${dInterp}
     <p style="font-size:13px;margin:10px 0 0;color:var(--mid)">💬 <strong>Tip voor communicatie:</strong> Wanneer je alle drie de hoeken benoemt in je boodschap, bereik je ook collega&#x27;s met een andere voorkeur en vergroot je de kans op draagvlak.</p></div>
@@ -535,12 +582,12 @@ function renderResultaat(r){
       <div class="iz-item iz-rich">
         <div class="iz-label">👥 Jouw teamrol</div>
         <div class="iz-val">${r.iz.rol||'–'}</div>
-        <div class="iz-toel">Zo positioneer jij jezelf van nature in een team. Bekijk of dit aansluit bij hoe anderen jou zien en of dit de ruimte krijgt in jouw huidige werkcontext.</div>
+        <div class="iz-toel">De teamrol die nu het beste bij je past. Bekijk of dit aansluit bij hoe anderen jou zien en of dit de ruimte krijgt in jouw huidige werkcontext.</div>
       </div>
       <div class="iz-item iz-rich">
-        <div class="iz-label">🎯 Uitdaging voor jou</div>
+        <div class="iz-label">🎯 Jouw uitdaging</div>
         <div class="iz-val">${r.iz.uitd||'–'}</div>
-        <div class="iz-toel">Dit is het ontwikkelpunt dat nu het meest relevant is. Een goed gesprek met een coach kan helpen om hier concrete stappen in te zetten.</div>
+        <div class="iz-toel">Dit is het ontwikkelpunt dat nu het meest relevant voor jou is. Een goed gesprek met een coach kan helpen om hier concrete stappen in te zetten.</div>
       </div>
     </div>
   </div>
@@ -564,45 +611,85 @@ function renderResultaat(r){
     <div class="ib ib-allergie">
       <h4>Je allergie in de praktijk</h4>
       <p>Hoogste allergie: <strong>${DATA.si[aS[0][0]]?.e||''} ${aS[0][0]} (${aS[0][1]})</strong> – ${DATA.si[aS[0][0]]?.kern||''}.</p>
-      <p>Een allergie ontstaat doordat dit waardesysteem botst met jouw waarden. Dit kan leiden tot frictie, irritatie of afhankelijk opstellen in samenwerking. <em>Let op:</em> ${DATA.si[aS[0][0]]?.vk||''}.</p>
+      ${r.iz.topAllergeTekst?`<p style="font-size:13px;color:var(--mid)">In je antwoorden komt dit terug in je bezwaar tegen: '<em>${r.iz.topAllergeTekst}</em>'.</p>`:''}
+      <p>Valkuil: <em>${DATA.si[aS[0][0]]?.vk||''}.</em></p>
       <p style="background:rgba(249,115,22,.08);border-radius:6px;padding:9px 12px;margin:8px 0 0;font-size:13px">🔍 <strong>Reflectievraag:</strong> "Wanneer trigger ik dit bij anderen — en hoe kan ik de ${aS[0][0]}-behoefte erkennen zonder er in mee te gaan?"</p>
     </div>
-    <div class="sec-label">Zo pas je dit meteen toe</div>
-    <ul class="tips">
-      <li><span class="ti">💪</span><div><strong>Werk met je kracht:</strong> start vanuit ${DATA.si[p1[0]]?.e||''} <em>${p1[0]}</em> – ${DATA.si[p1[0]]?.en||''}.</div></li>
-      <li><span class="ti">⚠️</span><div><strong>Voorkom frictie:</strong> herken je allergie op ${DATA.si[aS[0][0]]?.e||''} <em>${aS[0][0]}</em> – ${DATA.si[aS[0][0]]?.vk||''}.</div></li>
-      <li><span class="ti">🔗</span><div><strong>Brug bouwen:</strong> combineer ${p1[0]} met ${vS[1][0]} voor de sterkste samenwerking.</div></li>
-      <li><span class="ti">🪞</span><div><strong>Reflectie:</strong> vraag een collega hoe hij/zij jouw ${aS[0][0]}-allergie ervaart.</div></li>
-    </ul>
   </div>
 
   <div class="sh fade d3"><div class="sh-icon">🧩</div><h2>Totale conclusie</h2></div>
-  <div class="concl fade d3"><h4>Jouw profiel in één oogopslag</h4><p>${drZin} ${spZin}</p></div>
+  <div class="concl fade d3"><h4>Jouw profiel in één oogopslag</h4>${conclusie3}</div>
   <div class="card fade d3">
     <div class="sec-label">Wat dit voor jou betekent</div>
     <ul class="tips">
-      <li><span class="ti">✅</span><div><strong>Kracht:</strong> je brengt van nature ${A.l.toLowerCase()} in – dat helpt bij richting geven en keuzes maken.</div></li>
-      <li><span class="ti">👁️</span><div><strong>Aandachtspunt:</strong> neem expliciet het perspectief van ${C.l.toLowerCase()} mee bij complexe besluiten.</div></li>
-      <li><span class="ti">⚡</span><div><strong>Spanning:</strong> let op situaties die je allergie (${aS[0][0]}) triggeren – plan vooraf een checkvraag.</div></li>
-      <li><span class="ti">🌱</span><div><strong>Ontwikkeling:</strong> verken bewust één waardesysteem buiten je voorkeur.</div></li>
+      <li><span class="ti">⚠️</span><div><strong>Valkuil:</strong> ${drToelNw[A.k][spreadNiveau].split('.')[0]}. ${DATA.si[aS[0][0]]?.vk?'Let ook op: '+DATA.si[aS[0][0]].vk+'.':''}</div></li>
+      <li><span class="ti">🔗</span><div><strong>In samenwerking:</strong> ${r.iz.topVoorkeurTekst?`in je antwoorden ligt je nadruk op: '<em>${r.iz.topVoorkeurTekst}</em>' – dit herkennen anderen in jou`:'je voorkeur is herkenbaar in hoe jij communiceert en beslissingen neemt'}.</div></li>
+      <li><span class="ti">🌱</span><div><strong>Actie:</strong> ${r.iz.uitd?`werken aan <em>${r.iz.uitd}</em> – `:''}${actieAllergie}.</div></li>
     </ul>
     <div class="sec-label">Acties voor komende week</div>
     <ol class="acties">
-      <li><strong>Koerskompas-check:</strong> begin één overleg vanuit ${A.l} en sluit af met een vraag voor ${C.l.toLowerCase()}.</li>
-      <li><strong>Spiral-checkvraag:</strong> voeg aan je beslisagenda één vraag toe die je allergie (${aS[0][0]}) adresseert.</li>
-      <li><strong>Mini-reflectie:</strong> schrijf na een besluit per hoek op wat goed ging.</li>
-      <li><strong>Gesprek met collega:</strong> deel één inzicht uit dit rapport.</li>
+      <li><strong>Koerskompas:</strong> start één overleg vanuit ${A.l.toLowerCase()} en benoem ook de ${C.l.toLowerCase()}-hoek expliciet.</li>
+      <li><strong>Allergie-check:</strong> ${actieAllergie}${r.iz.topAllergeTekst?` – let op wat dit triggert: '<em>${r.iz.topAllergeTekst}</em>'`:''}.</li>
+      <li><strong>Uitdaging:</strong> ${r.iz.uitd?`zet een concrete eerste stap op: <em>${r.iz.uitd}</em>`:'vraag een collega wat hij/zij ziet als jouw blinde vlek'}.</li>
+      <li><strong>Kracht inzetten:</strong> benoem bewust jouw aanpak (${ckKracht.split(' ')[0]}…) in het volgende overleg.</li>
     </ol>
+    <div class="sec-label">Zo pas je dit meteen toe</div>
+    <ul class="tips">
+      <li><span class="ti">💪</span><div><strong>Jouw kracht:</strong> ${ckKracht} – vanuit ${DATA.si[p1[0]]?.e||''} <em>${p1[0]}</em>.</div></li>
+      <li><span class="ti">⚠️</span><div><strong>Voorkom frictie:</strong> herken je ${DATA.si[aS[0][0]]?.e||''} <em>${aS[0][0]}</em>-allergie – ${actieAllergie}.</div></li>
+      <li><span class="ti">🔗</span><div><strong>Brug bouwen:</strong> combineer ${p1[0]} met ${vS[1][0]}${combKracht[B.k+'+'+vS[1][0]]?' – '+combKracht[B.k+'+'+vS[1][0]]:' voor meer bereik'}.</div></li>
+      <li><span class="ti">🪞</span><div><strong>Reflectie:</strong> ${r.iz.topAllergeTekst?`vraag jezelf: wat triggert '<em>${r.iz.topAllergeTekst}</em>' bij mij?`:`vraag een collega hoe hij/zij jouw ${aS[0][0]}-allergie ervaart`}.</div></li>
+    </ul>
+  </div>
+
+  <div class="sh fade d4"><div class="sh-icon">🔍</div><h2>Verdieping: jouw Spiral-profiel</h2></div>
+  <div class="card fade d4" id="spiral-verd-card">
+    ${(()=>{
+      const vk=p1[0],ak=aS[0][0];
+      const si=DATA.si;
+      const vkInfo=si[vk],akInfo=si[ak];
+      const verdTekst={
+        rood:  'Jouw voorkeur is gedreven door daadkracht, directheid en snelheid. Je werkt het best in een omgeving waar je impact kunt maken en je energie kwijt kunt.',
+        paars: 'Jouw voorkeur is verankerd in veiligheid, verbondenheid en gedeelde tradities. Vertrouwen en groepsgevoel zijn voor jou essentieel om goed te functioneren.',
+        blauw: 'Jouw voorkeur is gefundeerd op structuur, orde en betrouwbaarheid. Duidelijkheid en consistentie geven jou het houvast om goed te presteren.',
+        oranje:'Jouw voorkeur is gericht op resultaat, ambitie en het benutten van kansen. Je bent gedreven om te presteren en ziet uitdagingen als groeimogelijkheden.',
+        groen: 'Jouw voorkeur is geworteld in verbinding, gelijkwaardigheid en samenwerking. Relaties en het meenemen van iedereen zijn voor jou leidend.',
+        geel:  'Jouw voorkeur is gestuurd door visie, complexiteitsdenken en autonomie. Je zoekt zingeving en verbindt perspectieven die anderen soms missen.',
+      };
+      const allTekst={
+        rood:  'Je hebt weinig geduld met agressie, machtsspel en onvoorspelbaar gedrag van anderen.',
+        paars: 'Groepsdruk, gebrek aan autonomie en sterk hiërarchisch denken kosten jou energie.',
+        blauw: 'Rigide regels, overdreven controle en bureaucratisch denken werken voor jou remmend.',
+        oranje:'Overmatige competitie, winstbejag en extreem individualistisch gedrag stoten jou af.',
+        groen: 'Conflictvermijding, eindeloos overleg en emotionele uitingen ervaar jij als belastend.',
+        geel:  'Eentonigheid, gebrek aan visie en het vermijden van complexiteit kosten jou energie.',
+      };
+      const topV=r.iz.topVoorkeurTekst||null;
+      const topA=r.iz.topAllergeTekst||null;
+      return `
+      <p style="font-size:13px;color:var(--mid);margin-bottom:16px">De Spiral Dynamics uitkomst geeft extra kleur aan jouw hoofdprofiel. Het laat zien vanuit welke drijfveren jij handelt en wat jou energie kost.</p>
+      <div class="ib" style="margin-bottom:14px">
+        <h4 style="margin:0 0 8px">${vkInfo?.e||''} Jouw dominante werkwaarde: ${vk.charAt(0).toUpperCase()+vk.slice(1)}</h4>
+        <p style="margin:0 0 8px">${verdTekst[vk]||''}</p>
+        ${topV?`<p style="font-size:13px;margin:6px 0 0;padding:9px 12px;background:rgba(0,0,255,.05);border-radius:6px;border-left:3px solid var(--blue)">💬 Wat jou het meest aanspreekt: "<em>${topV}</em>"</p>:`:''}
+      </div>
+      <div class="ib ib-allergie">
+        <h4 style="margin:0 0 8px">${akInfo?.e||''} Jouw allergie: ${ak.charAt(0).toUpperCase()+ak.slice(1)}</h4>
+        <p style="margin:0 0 8px">${allTekst[ak]||''}</p>
+        ${topA?`<p style="font-size:13px;margin:6px 0 0;padding:9px 12px;background:rgba(249,115,22,.08);border-radius:6px;border-left:3px solid #f97316">🔎 Wat jou het meest afstoot: "<em>${topA}</em>"</p>:`:''}
+      </div>
+    `})()}
+  </div>
+
     <hr class="divider">
     <div class="sec-label">Dieper werken aan je inzichten?</div>
     <p style="font-size:13px;color:var(--mid);margin-bottom:12px">Plan een coachinggesprek en vertaal je inzichten naar concrete volgende stappen.</p>
     <div class="contact-grid">
       <div class="cp"><strong>Andrew van der Veen</strong><a href="mailto:andrewvanderveen@decoachtrain.nl">andrewvanderveen@decoachtrain.nl</a><a href="tel:+31644289764">06 44289764</a></div>
-      <div class="cp"><strong>Marijke Scheenloop</strong><a href="mailto:marijke.scheneloop@decoachtrain.nl">marijke.scheneloop@decoachtrain.nl</a><a href="tel:+31633031450">06 33031450</a></div>
+      <div class="cp"><strong>Marijke Scheenloop</strong><a href="mailto:marijke.scheenloop@decoachtrain.nl">marijke.scheenloop@decoachtrain.nl</a><a href="tel:+31633031450">06 33031450</a></div>
     </div>
-  </div>
 
-  <div class="mail-sec fade d4">
+    <div class="mail-sec fade d5">
     <h3>📧 Ontvang dit rapport per mail</h3>
     <p>Je ontvangt het volledige rapport met PDF-bijlage op je opgegeven e-mailadres. De Coachtrain krijgt ook een kopie.</p>
     <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
@@ -620,7 +707,7 @@ function renderResultaat(r){
   `;
 
   requestAnimationFrame(()=>{
-    const svgEl=document.getElementById('driehoekSVG');if(svgEl)tekenDriehoek(svgEl,d);
+    const svgEl=document.getElementById('driehoekSVG');if(svgEl)tekenDriehoek(svgEl,d,{strategie:r.kw.strategie[0]?.w||null,structuur:r.kw.structuur[0]?.w||null,cultuur:r.kw.cultuur[0]?.w||null});
     chart('chart-v',r.voorkeur,'Voorkeur');chart('chart-a',r.allergie,'Allergie');
     const btnMail=document.getElementById('btn-mail');
     if(btnMail){
@@ -706,7 +793,7 @@ function bouwHtml(r,ds,[A,B,C],vS,aS,sk1,drZin,spZin){
   <div style="font-size:11px;font-weight:700;color:#0000FF;text-transform:uppercase;margin-bottom:10px">Wil je dieper werken aan je inzichten?</div>
   <table width="100%" cellpadding="0" cellspacing="0"><tr>
     <td width="50%" style="padding-right:6px"><div style="border:1px solid #e2e2e2;border-left:4px solid #2EF4CD;border-radius:8px;padding:12px 14px"><strong style="font-size:13px">Andrew van der Veen</strong><br><a href="mailto:andrewvanderveen@decoachtrain.nl" style="color:#0000FF;font-size:12px;text-decoration:none">andrewvanderveen@decoachtrain.nl</a><br><a href="tel:+31644289764" style="color:#0000FF;font-size:12px;text-decoration:none">06 44289764</a></div></td>
-    <td width="50%" style="padding-left:6px"><div style="border:1px solid #e2e2e2;border-left:4px solid #2EF4CD;border-radius:8px;padding:12px 14px"><strong style="font-size:13px">Marijke Scheenloop</strong><br><a href="mailto:marijke.scheneloop@decoachtrain.nl" style="color:#0000FF;font-size:12px;text-decoration:none">marijke.scheneloop@decoachtrain.nl</a><br><a href="tel:+31633031450" style="color:#0000FF;font-size:12px;text-decoration:none">06 33031450</a></div></td>
+    <td width="50%" style="padding-left:6px"><div style="border:1px solid #e2e2e2;border-left:4px solid #2EF4CD;border-radius:8px;padding:12px 14px"><strong style="font-size:13px">Marijke Scheenloop</strong><br><a href="mailto:marijke.scheenloop@decoachtrain.nl" style="color:#0000FF;font-size:12px;text-decoration:none">marijke.scheenloop@decoachtrain.nl</a><br><a href="tel:+31633031450" style="color:#0000FF;font-size:12px;text-decoration:none">06 33031450</a></div></td>
   </tr></table>
 </td></tr>
 
@@ -823,7 +910,7 @@ document.getElementById('btn-submit')?.addEventListener('click', async () => {
 
   // ── 3. Antwoorden verzamelen ──────────────────────────────────────────────
   const m = {};
-  for (let q = 1; q <= 33; q++) {
+  for (let q = 1; q <= 32; q++) {
     ['A','B','C','D','E','F'].forEach(l => {
       const i = document.querySelector(`[name="q${q}${l}"]`);
       if (i) m[`q${q}${l}`] = parseInt(i.value) || 0;
