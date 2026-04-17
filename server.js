@@ -5,8 +5,9 @@ require('dotenv').config();
 const express  = require('express');
 const path     = require('path');
 const { v4: uuidv4 } = require('uuid');
-const { createSubmission, getSubmission } = require('./database');
+const { createSubmission, getSubmission, getTeamSubmissions } = require('./database');
 const { calcScores }        = require('./scores');
+const { calcTeamAnalysis }  = require('./team-analysis');
 const { generatePdf }       = require('./pdf');
 const { sendRapportMail }   = require('./mailer');
 
@@ -267,6 +268,86 @@ app.post('/api/mail/:id', async (req, res) => {
     console.error('[mail] verzenden mislukt:', err);
     return res.status(500).json({ ok: false, error: 'E-mail verzenden mislukt. Probeer het opnieuw.' });
   }
+});
+
+// ── Endpoint: teamanalyse ophalen ─────────────────────────────────────────────
+//
+// Berekent een teamanalyse voor alle inzendingen met dezelfde teamnaam.
+// Beveiligd met een simpele ADMIN_TOKEN header-check.
+//
+// Gedrag per teamgrootte:
+//   0  respondenten → 404
+//   1  respondent   → 200 met melding (geen analyse)
+//   2  respondenten → 200 met analyse + waarschuwing (indicatief)
+//   3+ respondenten → 200 met volledige analyse
+//
+// Matching op team_code is case-insensitief en trim-onafhankelijk.
+// De originele teamnaam wordt teruggegeven in analyse.meta.team_code.
+
+app.get('/api/team/:team_code', (req, res) => {
+  // — Tokenbeveiliging —
+  const adminToken = process.env.ADMIN_TOKEN;
+  if (!adminToken) {
+    return res.status(503).json({
+      ok:    false,
+      error: 'Team-endpoint is niet geconfigureerd. Stel ADMIN_TOKEN in als omgevingsvariabele.',
+    });
+  }
+  if (req.headers['x-admin-token'] !== adminToken) {
+    return res.status(403).json({ ok: false, error: 'Toegang geweigerd.' });
+  }
+
+  const { team_code } = req.params;
+  if (!team_code || team_code.trim().length === 0) {
+    return res.status(400).json({ ok: false, error: 'Teamnaam ontbreekt.' });
+  }
+
+  // — Inzendingen ophalen —
+  let rows;
+  try {
+    rows = getTeamSubmissions(team_code);
+  } catch (err) {
+    console.error('[team] database error:', err);
+    return res.status(500).json({ ok: false, error: 'Fout bij ophalen teamdata.' });
+  }
+
+  if (!rows || rows.length === 0) {
+    return res.status(404).json({
+      ok:    false,
+      error: `Geen inzendingen gevonden voor team "${team_code}".`,
+    });
+  }
+
+  // — Te weinig respondenten voor analyse —
+  if (rows.length === 1) {
+    return res.status(200).json({
+      ok:      true,
+      analyse: null,
+      melding: 'Slechts 1 respondent gevonden. Teamanalyse is zinvol vanaf 3 respondenten.',
+      leden:   rows.map(r => ({ naam: r.naam, rol: r.rol ?? null, created_at: r.created_at })),
+    });
+  }
+
+  // — Analyse berekenen —
+  let analyse;
+  try {
+    analyse = calcTeamAnalysis(rows, team_code);
+  } catch (err) {
+    console.error('[team] analyse mislukt:', err.message);
+    return res.status(500).json({
+      ok:    false,
+      error: `Teamanalyse mislukt: ${err.message}`,
+    });
+  }
+
+  // Bij 2 respondenten: analyse is indicatief, geen harde conclusies
+  if (rows.length === 2) {
+    analyse.waarschuwing =
+      'Slechts 2 respondenten — spreiding en inzichten zijn indicatief, niet representatief. '
+    + 'Voeg meer teamleden toe voor een volledige analyse.';
+  }
+
+  return res.json({ ok: true, analyse });
 });
 
 // ── Start ─────────────────────────────────────────────────────────────────────

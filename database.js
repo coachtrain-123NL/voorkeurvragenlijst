@@ -8,7 +8,11 @@ const path = require('path');
 const fs   = require('fs');
 
 // Bewaar de database buiten de webroot zodat hij niet publiek opvraagbaar is.
-const dataDir = path.join(__dirname, 'data');
+// DATA_DIR kan als omgevingsvariabele worden ingesteld voor persistent storage
+// op platforms zoals Railway (Volume mount). Fallback: lokale ./data/ map.
+const dataDir = process.env.DATA_DIR
+  ? path.resolve(process.env.DATA_DIR)
+  : path.join(__dirname, 'data');
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
 const db = new DatabaseSync(path.join(dataDir, 'submissions.db'));
@@ -81,4 +85,38 @@ function getSubmission(id) {
   return selectSubmissionById.get(id) ?? null;
 }
 
-module.exports = { db, createSubmission, getSubmission };
+// Prepared statement voor teamopvraging met deduplicatie per e-mailadres.
+// CTE 'latest': per genormaliseerd e-mailadres de meest recente created_at.
+// Join: geef alleen die rijen terug die overeenkomen met de laatste inzending.
+// Matching op team_code is case-insensitief en trim-onafhankelijk.
+// De originele team_code-waarde in de database wordt niet gewijzigd.
+const selectTeamSubmissions = db.prepare(`
+  WITH ranked AS (
+    SELECT *,
+           ROW_NUMBER() OVER (
+             PARTITION BY LOWER(TRIM(email))
+             ORDER BY created_at DESC, id DESC
+           ) AS rn
+    FROM   submissions
+    WHERE  LOWER(TRIM(team_code)) = LOWER(TRIM(?))
+  )
+  SELECT id, naam, email, team_code, rol, created_at,
+         raw_answers, score_driehoek, score_voorkeur,
+         score_allergie, score_kw, score_iz
+  FROM   ranked
+  WHERE  rn = 1
+  ORDER  BY created_at ASC
+`);
+
+/**
+ * Haalt alle teamleden op voor een gegeven teamnaam.
+ * Matching is case-insensitief en negeert omringende spaties.
+ * Per e-mailadres wordt alleen de meest recente inzending binnen het team
+ * meegenomen (deduplicatie in de query — alle rijen blijven bewaard in de DB).
+ * Geeft een lege array terug als geen inzendingen gevonden.
+ */
+function getTeamSubmissions(teamCode) {
+  return selectTeamSubmissions.all(teamCode);
+}
+
+module.exports = { db, createSubmission, getSubmission, getTeamSubmissions };
