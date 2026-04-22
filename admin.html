@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<title>Beheer — De Coachtrain</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; max-width: 860px; margin: 40px auto; padding: 0 20px; color: #111; background: #f5f5f5; }
+
+  /* Login */
+  #login { max-width: 360px; margin: 80px auto; background: #fff; border-radius: 10px; padding: 32px; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+  #login h1 { font-size: 20px; margin: 0 0 20px; }
+  #login input { width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 10px; }
+  #login button { width: 100%; padding: 10px; font-size: 14px; font-weight: 700; background: #111; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
+  #login button:hover { background: #333; }
+  #login-fout { color: #b91c1c; font-size: 13px; margin-top: 8px; display: none; }
+
+  /* Dashboard */
+  #dash { display: none; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .meta-lijn { font-size: 13px; color: #888; margin-bottom: 28px; }
+  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .6px; color: #888; border-bottom: 1px solid #ddd; padding-bottom: 6px; margin: 28px 0 12px; }
+  button.uitloggen { float: right; font-size: 12px; padding: 5px 12px; background: none; border: 1px solid #ccc; border-radius: 5px; cursor: pointer; color: #666; }
+  button.uitloggen:hover { border-color: #888; color: #111; }
+
+  /* Teams */
+  .team-blok { background: #fff; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 12px; overflow: hidden; }
+  .team-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; cursor: pointer; }
+  .team-naam { font-weight: 700; font-size: 15px; }
+  .team-count { font-size: 12px; color: #888; }
+  .team-header-rechts { display: flex; align-items: center; gap: 10px; }
+  .team-body { border-top: 1px solid #f0f0f0; padding: 0 16px 12px; display: none; }
+  .team-blok.open .team-body { display: block; }
+  .team-blok.open .chevron { transform: rotate(180deg); }
+  .chevron { font-size: 11px; color: #aaa; transition: transform .15s; }
+  .leden-tabel { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0; }
+  .leden-tabel th { text-align: left; font-size: 11px; text-transform: uppercase; color: #aaa; padding: 4px 0; border-bottom: 1px solid #eee; }
+  .leden-tabel td { padding: 6px 0; border-bottom: 1px solid #f5f5f5; vertical-align: middle; }
+  .leden-tabel tr:last-child td { border-bottom: none; }
+
+  /* Knoppen */
+  .btn { display: inline-block; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 5px; text-decoration: none; cursor: pointer; border: none; }
+  .btn-primary { background: #111; color: #fff; }
+  .btn-primary:hover { background: #333; }
+  .btn-ghost { background: #f3f4f6; color: #374151; }
+  .btn-ghost:hover { background: #e5e7eb; }
+  .btn-team { background: #eff6ff; color: #1d4ed8; font-size: 12px; }
+  .btn-team:hover { background: #dbeafe; }
+  .team-footer { padding-top: 8px; }
+
+  /* Geen team */
+  .ind-rij { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+  .ind-rij:last-child { border-bottom: none; }
+  .ind-naam { font-weight: 600; }
+  .ind-sub { font-size: 11px; color: #888; }
+  .ind-rechts { display: flex; gap: 8px; align-items: center; }
+
+  /* Laad/leeg states */
+  #laden { color: #888; font-size: 14px; padding: 24px 0; }
+  .leeg { color: #aaa; font-size: 13px; font-style: italic; }
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="login">
+  <h1>Beheer</h1>
+  <input id="token-input" type="password" placeholder="Admin token" autocomplete="current-password">
+  <button onclick="login()">Inloggen</button>
+  <p id="login-fout"></p>
+</div>
+
+<!-- Dashboard -->
+<div id="dash">
+  <button class="uitloggen" onclick="uitloggen()">Uitloggen</button>
+  <h1>Dashboard</h1>
+  <div class="meta-lijn" id="dash-meta"></div>
+  <div id="laden">Laden…</div>
+  <div id="teams-sectie" style="display:none">
+    <h2>Teams</h2>
+    <div id="teams-lijst"></div>
+    <h2>Individueel (geen team)</h2>
+    <div id="ind-lijst"></div>
+  </div>
+</div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────────
+let TOKEN = sessionStorage.getItem('adminToken') || '';
+
+function fmt(d) {
+  return new Date(d).toLocaleDateString('nl-NL', { day:'numeric', month:'short', year:'numeric' });
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+if (TOKEN) {
+  toonDash();
+  laadData();
+} else {
+  toonLogin();
+}
+
+// ── Login / Uitloggen ─────────────────────────────────────────────────────────
+document.getElementById('token-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') login();
+});
+
+async function login() {
+  const token = document.getElementById('token-input').value.trim();
+  const fout  = document.getElementById('login-fout');
+  fout.style.display = 'none';
+  if (!token) { fout.textContent = 'Voer een token in.'; fout.style.display = 'block'; return; }
+
+  const r = await fetch('/api/admin/submissions', { headers: { 'X-Admin-Token': token } });
+  if (r.status === 403) {
+    fout.textContent = 'Ongeldig token.'; fout.style.display = 'block'; return;
+  }
+  if (!r.ok) {
+    fout.textContent = 'Serverfout. Probeer opnieuw.'; fout.style.display = 'block'; return;
+  }
+  TOKEN = token;
+  sessionStorage.setItem('adminToken', TOKEN);
+  toonDash();
+  renderData(await r.json());
+}
+
+function uitloggen() {
+  TOKEN = '';
+  sessionStorage.removeItem('adminToken');
+  document.getElementById('token-input').value = '';
+  document.getElementById('login-fout').style.display = 'none';
+  toonLogin();
+}
+
+function toonLogin() {
+  document.getElementById('login').style.display = 'block';
+  document.getElementById('dash').style.display  = 'none';
+}
+function toonDash() {
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('dash').style.display  = 'block';
+}
+
+// ── Data ophalen ──────────────────────────────────────────────────────────────
+async function laadData() {
+  document.getElementById('laden').textContent = 'Laden…';
+  document.getElementById('teams-sectie').style.display = 'none';
+  try {
+    const r = await fetch('/api/admin/submissions', { headers: { 'X-Admin-Token': TOKEN } });
+    if (r.status === 403) { uitloggen(); return; }
+    const data = await r.json();
+    renderData(data);
+  } catch (e) {
+    document.getElementById('laden').textContent = 'Verbindingsfout.';
+  }
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function renderData(data) {
+  const subs = data.submissions || [];
+  document.getElementById('laden').style.display = 'none';
+  document.getElementById('teams-sectie').style.display = 'block';
+  document.getElementById('dash-meta').textContent =
+    `${subs.length} inzendingen totaal  ·  bijgewerkt ${new Date().toLocaleTimeString('nl-NL', {hour:'2-digit',minute:'2-digit'})}`;
+
+  // Groepeer op team_code (case-insensitief), null → individueel
+  const teams = {};    // genormaliseerde code → { label, leden[] }
+  const ind   = [];
+
+  for (const s of subs) {
+    const code = (s.team_code || '').trim();
+    if (!code) { ind.push(s); continue; }
+    const key = code.toLowerCase();
+    if (!teams[key]) teams[key] = { label: code, leden: [] };
+    teams[key].leden.push(s);
+  }
+
+  // Teams renderen
+  const teamLijst = document.getElementById('teams-lijst');
+  const teamKeys  = Object.keys(teams).sort();
+  if (teamKeys.length === 0) {
+    teamLijst.innerHTML = '<p class="leeg">Geen teams gevonden.</p>';
+  } else {
+    teamLijst.innerHTML = teamKeys.map(key => {
+      const t = teams[key];
+      const rapportUrl = `team.html?code=${encodeURIComponent(t.label)}&token=${encodeURIComponent(TOKEN)}`;
+      const ledenRijen = t.leden.map(l => `
+        <tr>
+          <td>${l.naam}</td>
+          <td style="color:#888">${l.rol || '–'}</td>
+          <td style="color:#888">${fmt(l.created_at)}</td>
+          <td style="text-align:right">
+            <a href="/?rapport=${l.id}" target="_blank" class="btn btn-ghost">Rapport →</a>
+          </td>
+        </tr>`).join('');
+      return `
+        <div class="team-blok" id="team-${key}">
+          <div class="team-header" onclick="toggleTeam('${key}')">
+            <div>
+              <span class="team-naam">${t.label}</span>
+            </div>
+            <div class="team-header-rechts">
+              <span class="team-count">${t.leden.length} ${t.leden.length === 1 ? 'lid' : 'leden'}</span>
+              <span class="chevron">▼</span>
+            </div>
+          </div>
+          <div class="team-body">
+            <table class="leden-tabel">
+              <thead><tr><th>Naam</th><th>Rol</th><th>Datum</th><th></th></tr></thead>
+              <tbody>${ledenRijen}</tbody>
+            </table>
+            <div class="team-footer">
+              <a href="${rapportUrl}" target="_blank" class="btn btn-team">Teamrapport openen →</a>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // Individuele inzendingen renderen
+  const indLijst = document.getElementById('ind-lijst');
+  if (ind.length === 0) {
+    indLijst.innerHTML = '<p class="leeg">Geen inzendingen zonder team.</p>';
+  } else {
+    indLijst.innerHTML = ind.map(s => `
+      <div class="ind-rij">
+        <div>
+          <div class="ind-naam">${s.naam}</div>
+          <div class="ind-sub">${s.email} &nbsp;·&nbsp; ${fmt(s.created_at)}</div>
+        </div>
+        <div class="ind-rechts">
+          <a href="/?rapport=${s.id}" target="_blank" class="btn btn-ghost">Rapport →</a>
+        </div>
+      </div>`).join('');
+  }
+}
+
+function toggleTeam(key) {
+  document.getElementById('team-' + key).classList.toggle('open');
+}
+</script>
+</body>
+</html>

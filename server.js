@@ -5,7 +5,7 @@ require('dotenv').config();
 const express  = require('express');
 const path     = require('path');
 const { v4: uuidv4 } = require('uuid');
-const { createSubmission, getSubmission, getTeamSubmissions } = require('./database');
+const { createSubmission, getSubmission, getTeamSubmissions, getAllSubmissions } = require('./database');
 const { calcScores }        = require('./scores');
 const { calcTeamAnalysis }  = require('./team-analysis');
 const { generatePdf }       = require('./pdf');
@@ -348,6 +348,29 @@ app.get('/api/team/:team_code', (req, res) => {
   }
 
   return res.json({ ok: true, analyse });
+});
+
+// ── Endpoint: admin — alle inzendingen ───────────────────────────────────────
+//
+// Geeft id, naam, email, team_code, rol en datum terug van alle inzendingen.
+// Bedoeld voor de beheerpagina (admin.html). Beveiligd met ADMIN_TOKEN.
+
+app.get('/api/admin/submissions', (req, res) => {
+  const adminToken = process.env.ADMIN_TOKEN;
+  if (!adminToken) {
+    return res.status(503).json({ ok: false, error: 'ADMIN_TOKEN niet geconfigureerd.' });
+  }
+  if (req.headers['x-admin-token'] !== adminToken) {
+    return res.status(403).json({ ok: false, error: 'Toegang geweigerd.' });
+  }
+
+  try {
+    const rows = getAllSubmissions();
+    return res.json({ ok: true, submissions: rows });
+  } catch (err) {
+    console.error('[admin] database error:', err);
+    return res.status(500).json({ ok: false, error: 'Fout bij ophalen data.' });
+  }
 });
 
 // ── Start ─────────────────────────────────────────────────────────────────────

@@ -119,4 +119,19 @@ function getTeamSubmissions(teamCode) {
   return selectTeamSubmissions.all(teamCode);
 }
 
-module.exports = { db, createSubmission, getSubmission, getTeamSubmissions };
+// Prepared statement voor adminoverzicht — alle inzendingen, alleen metadata
+const selectAllSubmissions = db.prepare(`
+  SELECT id, naam, email, team_code, rol, created_at
+  FROM   submissions
+  ORDER  BY created_at DESC
+`);
+
+/**
+ * Haalt alle inzendingen op (alleen metadata, geen scores of antwoorden).
+ * Uitsluitend bedoeld voor de admin-beheerpagina.
+ */
+function getAllSubmissions() {
+  return selectAllSubmissions.all();
+}
+
+module.exports = { db, createSubmission, getSubmission, getTeamSubmissions, getAllSubmissions };

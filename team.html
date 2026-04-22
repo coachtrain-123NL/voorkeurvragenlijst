@@ -58,8 +58,11 @@
 
 <script>
 // ── Configuratie ──────────────────────────────────────────────────────────────
-const TEAM_CODE  = 'testteam';       // verander naar jouw teamnaam
-const ADMIN_TOKEN = 'test-token-123'; // verander naar jouw ADMIN_TOKEN
+// URL-params (?code=...&token=...) hebben voorrang op de hardcoded waarden.
+// Zo werken links vanuit admin.html automatisch zonder aanpassing.
+const _p = new URLSearchParams(location.search);
+const TEAM_CODE   = _p.get('code')  || 'testteam';
+const ADMIN_TOKEN = _p.get('token') || 'test-token-123';
 
 const EMOJI = { rood:'🔴', blauw:'🔵', groen:'🟢', geel:'🟡', oranje:'🟠', paars:'🟣' };
 const KLEUREN = ['rood','blauw','groen','geel','oranje','paars'];
