@@ -48,6 +48,19 @@
   .btn-team:hover { background: #dbeafe; }
   .team-footer { padding-top: 8px; }
 
+  /* Teamstatus */
+  .badge-status { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+  .badge-status.klaar  { background: #d1fae5; color: #065f46; }
+  .badge-status.bijna  { background: #fef3c7; color: #92400e; }
+  .badge-status.weinig { background: #fee2e2; color: #991b1b; }
+  .team-stats { font-size: 11px; color: #aaa; margin: 6px 0 4px; }
+  .team-footer-warn { font-size: 11px; color: #92400e; margin-top: 5px; }
+
+  /* Ververs-knop */
+  .btn-ververs { float: right; font-size: 12px; padding: 5px 12px; background: none;
+    border: 1px solid #ccc; border-radius: 5px; cursor: pointer; color: #666; margin-left: 6px; }
+  .btn-ververs:hover { border-color: #888; color: #111; }
+
   /* Geen team */
   .ind-rij { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
   .ind-rij:last-child { border-bottom: none; }
@@ -150,6 +163,7 @@
 <!-- Dashboard -->
 <div id="dash">
   <button class="uitloggen" onclick="uitloggen()">Uitloggen</button>
+  <button class="btn-ververs" onclick="laadData()">Ververs</button>
   <h1>Dashboard</h1>
   <div class="meta-lijn" id="dash-meta"></div>
   <div class="filter-balk">
@@ -254,11 +268,25 @@ function renderData(subs) {
   document.getElementById('laden').style.display = 'none';
   document.getElementById('teams-sectie').style.display = 'block';
 
-  const totActief = allSubs.filter(s => !s.deleted_at && !s.is_test).length;
-  const totTest   = allSubs.filter(s => !s.deleted_at &&  s.is_test).length;
-  const totDel    = allSubs.filter(s =>  s.deleted_at).length;
+  const totActief    = allSubs.filter(s => !s.deleted_at && !s.is_test).length;
+  const totTest      = allSubs.filter(s => !s.deleted_at &&  s.is_test).length;
+  const totDel       = allSubs.filter(s =>  s.deleted_at).length;
+  const totUitgesl   = allSubs.filter(s => !s.deleted_at && s.excluded_from_team).length;
+
+  // Bereken rapportklare teams uit volledige (ongefilterde) dataset
+  const _teamTelling = {};
+  for (const s of allSubs) {
+    if (s.deleted_at || !(s.team_code||'').trim()) continue;
+    const k = s.team_code.trim().toLowerCase();
+    if (!_teamTelling[k]) _teamTelling[k] = 0;
+    if (!s.is_test && !s.excluded_from_team) _teamTelling[k]++;
+  }
+  const totRapportKlaar = Object.values(_teamTelling).filter(n => n >= 3).length;
+
   document.getElementById('dash-meta').textContent =
-    `${totActief} inzendingen · ${totTest} test · ${totDel} verwijderd · bijgewerkt ${new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'})}`;
+    `${totActief} actief · ${totTest} test · ${totUitgesl} uitgesloten · ${totDel} verwijderd`
+    + ` · ${totRapportKlaar} team${totRapportKlaar===1?'':'s'} rapportklaar`
+    + ` · bijgewerkt ${new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'})}`;
   document.getElementById('del-count').textContent = deleted.length ? `(${deleted.length})` : '';
 
   // Groepeer actieve inzendingen
@@ -294,31 +322,57 @@ function renderData(subs) {
   document.getElementById('teams-lijst').innerHTML = teamKeys.length===0
     ? '<p class="leeg">Geen teams gevonden.</p>'
     : teamKeys.map(key => {
-        const t=teams[key];
-        const url=`team.html?code=${encodeURIComponent(t.label)}&token=${encodeURIComponent(TOKEN)}`;
-        const rijen=t.leden.map(l=>`
+        const t   = teams[key];
+        const url = `team.html?code=${encodeURIComponent(t.label)}&token=${encodeURIComponent(TOKEN)}`;
+
+        // Statistieken per team
+        const nMeetelt = t.leden.filter(l => !l.is_test && !l.excluded_from_team).length;
+        const nTest    = t.leden.filter(l =>  l.is_test).length;
+        const nUitgesl = t.leden.filter(l =>  l.excluded_from_team).length;
+
+        // Statuslabel
+        const stKlasse = nMeetelt >= 3 ? 'klaar' : nMeetelt === 2 ? 'bijna' : 'weinig';
+        const stTekst  = nMeetelt >= 3 ? 'rapport klaar' : nMeetelt === 2 ? 'bijna genoeg' : 'te weinig data';
+        const statusBadge = `<span class="badge-status ${stKlasse}">${stTekst}</span>`;
+
+        // Stats-regel in body
+        const statsDelen = [`${nMeetelt} meetelt`];
+        if (nTest)    statsDelen.push(`${nTest} test`);
+        if (nUitgesl) statsDelen.push(`${nUitgesl} uitgesloten`);
+        const statsRegel = `<div class="team-stats">${statsDelen.join(' · ')}</div>`;
+
+        // Rapportknop
+        const rapportKnop = nMeetelt < 3
+          ? `<a href="${url}" target="_blank" class="btn btn-team">Teamrapport openen (beperkt) →</a>
+             <div class="team-footer-warn">Minimaal 3 meetellende respondenten aanbevolen.</div>`
+          : `<a href="${url}" target="_blank" class="btn btn-team">Teamrapport openen →</a>`;
+
+        const rijen = t.leden.map(l=>`
           <tr class="${l.excluded_from_team ? 'lid-uitgesloten' : l.is_test ? 'lid-test' : ''}">
             <td>${esc(l.naam)}${testBadge(l)}${uitgeslotenBadge(l)}</td>
             <td style="color:#888">${esc(l.rol||'–')}</td>
             <td style="color:#888">${fmt(l.created_at)}</td>
             <td style="text-align:right;white-space:nowrap">${acties(l)}</td>
           </tr>`).join('');
+
         return `
           <div class="team-blok" id="team-${key}">
             <div class="team-header" onclick="toggleTeam('${key}')">
               <span class="team-naam">${esc(t.label)}</span>
               <div class="team-header-rechts">
                 <span class="team-count">${t.leden.length} ${t.leden.length===1?'lid':'leden'}</span>
+                ${statusBadge}
                 <span class="chevron">▼</span>
               </div>
             </div>
             <div class="team-body">
+              ${statsRegel}
               <table class="leden-tabel">
                 <thead><tr><th>Naam</th><th>Rol</th><th>Datum</th><th></th></tr></thead>
                 <tbody>${rijen}</tbody>
               </table>
               <div class="team-footer">
-                <a href="${url}" target="_blank" class="btn btn-team">Teamrapport openen →</a>
+                ${rapportKnop}
               </div>
             </div>
           </div>`;
