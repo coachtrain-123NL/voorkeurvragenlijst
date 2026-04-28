@@ -5,7 +5,10 @@ require('dotenv').config();
 const express  = require('express');
 const path     = require('path');
 const { v4: uuidv4 } = require('uuid');
-const { createSubmission, getSubmission, getTeamSubmissions, getAllSubmissions } = require('./database');
+const {
+  createSubmission, getSubmission, getTeamSubmissions,
+  getAllSubmissions, softDeleteSubmission, restoreSubmission, updateSubmission,
+} = require('./database');
 const { calcScores }        = require('./scores');
 const { calcTeamAnalysis }  = require('./team-analysis');
 const { generatePdf }       = require('./pdf');
@@ -350,26 +353,82 @@ app.get('/api/team/:team_code', (req, res) => {
   return res.json({ ok: true, analyse });
 });
 
+// ── Admin auth helper ─────────────────────────────────────────────────────────
+function requireAdmin(req, res) {
+  const tok = process.env.ADMIN_TOKEN;
+  if (!tok) { res.status(503).json({ ok: false, error: 'ADMIN_TOKEN niet geconfigureerd.' }); return false; }
+  if (req.headers['x-admin-token'] !== tok) { res.status(403).json({ ok: false, error: 'Toegang geweigerd.' }); return false; }
+  return true;
+}
+
 // ── Endpoint: admin — alle inzendingen ───────────────────────────────────────
 //
 // Geeft id, naam, email, team_code, rol en datum terug van alle inzendingen.
 // Bedoeld voor de beheerpagina (admin.html). Beveiligd met ADMIN_TOKEN.
 
 app.get('/api/admin/submissions', (req, res) => {
-  const adminToken = process.env.ADMIN_TOKEN;
-  if (!adminToken) {
-    return res.status(503).json({ ok: false, error: 'ADMIN_TOKEN niet geconfigureerd.' });
-  }
-  if (req.headers['x-admin-token'] !== adminToken) {
-    return res.status(403).json({ ok: false, error: 'Toegang geweigerd.' });
-  }
-
+  if (!requireAdmin(req, res)) return;
   try {
-    const rows = getAllSubmissions();
-    return res.json({ ok: true, submissions: rows });
+    return res.json({ ok: true, submissions: getAllSubmissions() });
   } catch (err) {
     console.error('[admin] database error:', err);
     return res.status(500).json({ ok: false, error: 'Fout bij ophalen data.' });
+  }
+});
+
+// ── Endpoint: admin — inzending bewerken ─────────────────────────────────────
+app.patch('/api/admin/submissions/:id', (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  const { id } = req.params;
+  if (!UUID_RE.test(id)) return res.status(400).json({ ok: false, error: 'Ongeldig id.' });
+
+  const { naam, email, team_code, rol } = req.body ?? {};
+  if (typeof naam !== 'string' || !naam.trim())
+    return res.status(400).json({ ok: false, error: 'Naam is verplicht.' });
+  if (typeof email !== 'string' || !EMAIL_RE.test(email.trim()))
+    return res.status(400).json({ ok: false, error: 'Ongeldig e-mailadres.' });
+
+  try {
+    updateSubmission(id, {
+      naam:      naam.trim(),
+      email:     email.trim().toLowerCase(),
+      team_code: typeof team_code === 'string' && team_code.trim() ? team_code.trim() : null,
+      rol:       typeof rol === 'string' && rol.trim() ? rol.trim() : null,
+    });
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('[admin] update error:', err);
+    return res.status(500).json({ ok: false, error: 'Bijwerken mislukt.' });
+  }
+});
+
+// ── Endpoint: admin — soft delete ────────────────────────────────────────────
+app.delete('/api/admin/submissions/:id', (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  const { id } = req.params;
+  if (!UUID_RE.test(id)) return res.status(400).json({ ok: false, error: 'Ongeldig id.' });
+
+  try {
+    softDeleteSubmission(id);
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('[admin] soft delete error:', err);
+    return res.status(500).json({ ok: false, error: 'Verwijderen mislukt.' });
+  }
+});
+
+// ── Endpoint: admin — herstellen ─────────────────────────────────────────────
+app.post('/api/admin/submissions/:id/restore', (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  const { id } = req.params;
+  if (!UUID_RE.test(id)) return res.status(400).json({ ok: false, error: 'Ongeldig id.' });
+
+  try {
+    restoreSubmission(id);
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('[admin] restore error:', err);
+    return res.status(500).json({ ok: false, error: 'Herstellen mislukt.' });
   }
 });
 

@@ -20,6 +20,9 @@ const db = new DatabaseSync(path.join(dataDir, 'submissions.db'));
 // WAL-mode: betere prestaties bij meerdere gelijktijdige lezers
 db.exec('PRAGMA journal_mode = WAL');
 
+// Migratie: voeg deleted_at toe als die nog niet bestaat (veilig te herhalen)
+try { db.exec('ALTER TABLE submissions ADD COLUMN deleted_at TEXT'); } catch (_) {}
+
 // Schema – één tabel met alle benodigde kolommen
 db.exec(`
   CREATE TABLE IF NOT EXISTS submissions (
@@ -99,6 +102,7 @@ const selectTeamSubmissions = db.prepare(`
            ) AS rn
     FROM   submissions
     WHERE  LOWER(TRIM(team_code)) = LOWER(TRIM(?))
+    AND    deleted_at IS NULL
   )
   SELECT id, naam, email, team_code, rol, created_at,
          raw_answers, score_driehoek, score_voorkeur,
@@ -119,19 +123,42 @@ function getTeamSubmissions(teamCode) {
   return selectTeamSubmissions.all(teamCode);
 }
 
-// Prepared statement voor adminoverzicht — alle inzendingen, alleen metadata
+// Prepared statement voor adminoverzicht — alle inzendingen inclusief verwijderde
 const selectAllSubmissions = db.prepare(`
-  SELECT id, naam, email, team_code, rol, created_at
+  SELECT id, naam, email, team_code, rol, created_at, deleted_at
   FROM   submissions
   ORDER  BY created_at DESC
 `);
 
 /**
- * Haalt alle inzendingen op (alleen metadata, geen scores of antwoorden).
+ * Haalt alle inzendingen op (incl. soft-deleted), alleen metadata.
  * Uitsluitend bedoeld voor de admin-beheerpagina.
  */
 function getAllSubmissions() {
   return selectAllSubmissions.all();
 }
 
-module.exports = { db, createSubmission, getSubmission, getTeamSubmissions, getAllSubmissions };
+// Soft delete: zet deleted_at op huidige timestamp
+const stmtSoftDelete = db.prepare('UPDATE submissions SET deleted_at = ? WHERE id = ?');
+function softDeleteSubmission(id) {
+  stmtSoftDelete.run(new Date().toISOString(), id);
+}
+
+// Restore: wis deleted_at
+const stmtRestore = db.prepare('UPDATE submissions SET deleted_at = NULL WHERE id = ?');
+function restoreSubmission(id) {
+  stmtRestore.run(id);
+}
+
+// Bewerk naam/email/team_code/rol — scores blijven ongewijzigd
+const stmtUpdate = db.prepare(
+  'UPDATE submissions SET naam=:naam, email=:email, team_code=:team_code, rol=:rol WHERE id=:id'
+);
+function updateSubmission(id, { naam, email, team_code, rol }) {
+  stmtUpdate.run({ id, naam, email, team_code: team_code ?? null, rol: rol ?? null });
+}
+
+module.exports = {
+  db, createSubmission, getSubmission, getTeamSubmissions,
+  getAllSubmissions, softDeleteSubmission, restoreSubmission, updateSubmission,
+};
