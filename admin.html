@@ -78,6 +78,15 @@
   .badge-test { display: inline-block; font-size: 10px; font-weight: 700;
     padding: 1px 6px; border-radius: 10px; background: #fef3c7; color: #92400e; margin-left: 4px; }
 
+  /* Uitgesloten badge + rij-dimming */
+  .badge-uitgesloten { display: inline-block; font-size: 10px; font-weight: 700;
+    padding: 1px 6px; border-radius: 10px; background: #f1f5f9; color: #64748b; margin-left: 4px; }
+  .lid-uitgesloten td { opacity: .4; }
+  .btn-include { background: #d1fae5; color: #065f46; }
+  .btn-include:hover { background: #a7f3d0; }
+  .btn-exclude { background: #f1f5f9; color: #475569; }
+  .btn-exclude:hover { background: #e2e8f0; }
+
   /* Verwijderde inzendingen sectie */
   #del-toggle { cursor: pointer; user-select: none; }
   #del-toggle:hover { color: #555; }
@@ -256,14 +265,19 @@ function renderData(subs) {
     teams[key].leden.push(s);
   }
 
-  // Actieknoppen — is_test meegeven aan modal
+  // Actieknoppen — is_test + excluded_from_team meegeven aan modal
   function acties(s) {
-    const d=JSON.stringify({id:s.id,naam:s.naam,email:s.email,team:s.team_code||'',rol:s.rol||'',is_test:!!s.is_test}).replace(/'/g,"\\'");
+    const d=JSON.stringify({id:s.id,naam:s.naam,email:s.email,team:s.team_code||'',rol:s.rol||'',is_test:!!s.is_test,excluded_from_team:!!s.excluded_from_team}).replace(/'/g,"\\'");
+    const uitslBtn = s.excluded_from_team
+      ? `<button onclick="toggleUitsluiting('${s.id}')" class="btn btn-include">Meenemen</button>`
+      : `<button onclick="toggleUitsluiting('${s.id}')" class="btn btn-exclude">Uitsluiten</button>`;
     return `<a href="/?rapport=${s.id}" target="_blank" class="btn btn-ghost">Rapport</a>
             <button onclick='openModal(${d})' class="btn btn-ghost">Bewerk</button>
+            ${uitslBtn}
             <button onclick="verwijder('${s.id}','${esc(s.naam)}')" class="btn btn-danger">Verwijder</button>`;
   }
-  function testBadge(s) { return s.is_test ? ' <span class="badge-test">test</span>' : ''; }
+  function testBadge(s)       { return s.is_test          ? ' <span class="badge-test">test</span>'             : ''; }
+  function uitgeslotenBadge(s){ return s.excluded_from_team ? ' <span class="badge-uitgesloten">uitgesloten</span>' : ''; }
 
   // Teams
   const teamKeys=Object.keys(teams).sort();
@@ -273,8 +287,8 @@ function renderData(subs) {
         const t=teams[key];
         const url=`team.html?code=${encodeURIComponent(t.label)}&token=${encodeURIComponent(TOKEN)}`;
         const rijen=t.leden.map(l=>`
-          <tr>
-            <td>${esc(l.naam)}${testBadge(l)}</td>
+          <tr class="${l.excluded_from_team ? 'lid-uitgesloten' : ''}">
+            <td>${esc(l.naam)}${testBadge(l)}${uitgeslotenBadge(l)}</td>
             <td style="color:#888">${esc(l.rol||'–')}</td>
             <td style="color:#888">${fmt(l.created_at)}</td>
             <td style="text-align:right;white-space:nowrap">${acties(l)}</td>
@@ -346,6 +360,25 @@ async function verwijder(id, naam) {
 async function herstel(id) {
   const r = await fetch(`/api/admin/submissions/${id}/restore`, { method:'POST', headers:{'X-Admin-Token':TOKEN} });
   if (!r.ok) { alert('Herstellen mislukt.'); return; }
+  laadData();
+}
+
+async function toggleUitsluiting(id) {
+  const s = allSubs.find(x => x.id === id);
+  if (!s) return;
+  const r = await fetch(`/api/admin/submissions/${id}`, {
+    method:  'PATCH',
+    headers: { 'Content-Type':'application/json', 'X-Admin-Token': TOKEN },
+    body:    JSON.stringify({
+      naam:               s.naam,
+      email:              s.email,
+      team_code:          s.team_code || null,
+      rol:                s.rol       || null,
+      is_test:            s.is_test   ? 1 : 0,
+      excluded_from_team: s.excluded_from_team ? 0 : 1,
+    }),
+  });
+  if (!r.ok) { alert('Actie mislukt.'); return; }
   laadData();
 }
 

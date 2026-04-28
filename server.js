@@ -382,7 +382,7 @@ app.patch('/api/admin/submissions/:id', (req, res) => {
   const { id } = req.params;
   if (!UUID_RE.test(id)) return res.status(400).json({ ok: false, error: 'Ongeldig id.' });
 
-  const { naam, email, team_code, rol, is_test } = req.body ?? {};
+  const { naam, email, team_code, rol, is_test, excluded_from_team } = req.body ?? {};
   if (typeof naam !== 'string' || !naam.trim())
     return res.status(400).json({ ok: false, error: 'Naam is verplicht.' });
   if (typeof email !== 'string' || !EMAIL_RE.test(email.trim()))
@@ -390,11 +390,12 @@ app.patch('/api/admin/submissions/:id', (req, res) => {
 
   try {
     updateSubmission(id, {
-      naam:      naam.trim(),
-      email:     email.trim().toLowerCase(),
-      team_code: typeof team_code === 'string' && team_code.trim() ? team_code.trim() : null,
-      rol:       typeof rol === 'string' && rol.trim() ? rol.trim() : null,
-      is_test:   is_test ? 1 : 0,
+      naam:               naam.trim(),
+      email:              email.trim().toLowerCase(),
+      team_code:          typeof team_code === 'string' && team_code.trim() ? team_code.trim() : null,
+      rol:                typeof rol === 'string' && rol.trim() ? rol.trim() : null,
+      is_test:            is_test            ? 1 : 0,
+      excluded_from_team: excluded_from_team ? 1 : 0,
     });
     return res.json({ ok: true });
   } catch (err) {

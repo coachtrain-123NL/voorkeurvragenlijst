@@ -21,8 +21,9 @@ const db = new DatabaseSync(path.join(dataDir, 'submissions.db'));
 db.exec('PRAGMA journal_mode = WAL');
 
 // Migraties: veilig te herhalen, fout = kolom bestaat al
-try { db.exec('ALTER TABLE submissions ADD COLUMN deleted_at TEXT'); }          catch (_) {}
-try { db.exec('ALTER TABLE submissions ADD COLUMN is_test INTEGER DEFAULT 0'); } catch (_) {}
+try { db.exec('ALTER TABLE submissions ADD COLUMN deleted_at TEXT'); }                    catch (_) {}
+try { db.exec('ALTER TABLE submissions ADD COLUMN is_test INTEGER DEFAULT 0'); }          catch (_) {}
+try { db.exec('ALTER TABLE submissions ADD COLUMN excluded_from_team INTEGER DEFAULT 0'); } catch (_) {}
 
 // Schema – één tabel met alle benodigde kolommen
 db.exec(`
@@ -104,6 +105,7 @@ const selectTeamSubmissions = db.prepare(`
     FROM   submissions
     WHERE  LOWER(TRIM(team_code)) = LOWER(TRIM(?))
     AND    deleted_at IS NULL
+    AND    excluded_from_team = 0
   )
   SELECT id, naam, email, team_code, rol, created_at,
          raw_answers, score_driehoek, score_voorkeur,
@@ -126,7 +128,7 @@ function getTeamSubmissions(teamCode) {
 
 // Prepared statement voor adminoverzicht — alle inzendingen inclusief verwijderde + test
 const selectAllSubmissions = db.prepare(`
-  SELECT id, naam, email, team_code, rol, created_at, deleted_at, is_test
+  SELECT id, naam, email, team_code, rol, created_at, deleted_at, is_test, excluded_from_team
   FROM   submissions
   ORDER  BY created_at DESC
 `);
@@ -151,12 +153,19 @@ function restoreSubmission(id) {
   stmtRestore.run(id);
 }
 
-// Bewerk naam/email/team_code/rol/is_test — scores blijven ongewijzigd
+// Bewerk naam/email/team_code/rol/is_test/excluded_from_team — scores blijven ongewijzigd
 const stmtUpdate = db.prepare(
-  'UPDATE submissions SET naam=:naam, email=:email, team_code=:team_code, rol=:rol, is_test=:is_test WHERE id=:id'
+  'UPDATE submissions SET naam=:naam, email=:email, team_code=:team_code, rol=:rol, is_test=:is_test, excluded_from_team=:excluded_from_team WHERE id=:id'
 );
-function updateSubmission(id, { naam, email, team_code, rol, is_test }) {
-  stmtUpdate.run({ id, naam, email, team_code: team_code ?? null, rol: rol ?? null, is_test: is_test ? 1 : 0 });
+function updateSubmission(id, { naam, email, team_code, rol, is_test, excluded_from_team }) {
+  stmtUpdate.run({
+    id,
+    naam, email,
+    team_code:          team_code          ?? null,
+    rol:                rol                ?? null,
+    is_test:            is_test            ? 1 : 0,
+    excluded_from_team: excluded_from_team ? 1 : 0,
+  });
 }
 
 module.exports = {
