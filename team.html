@@ -4,52 +4,110 @@
 <meta charset="UTF-8">
 <title>Teamrapport</title>
 <style>
-  body { font-family: Arial, sans-serif; max-width: 820px; margin: 40px auto; padding: 0 20px; color: #111; background: #f7f7f7; }
+  *, *::before, *::after { box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; max-width: 820px; margin: 40px auto; padding: 0 20px; color: #111; background: #f5f5f5; }
+
+  /* ── Koppen ──────────────────────────────────────────────────────────────── */
   h1 { font-size: 22px; margin: 0 0 4px; }
-  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: #888; border-bottom: 1px solid #ddd; padding-bottom: 6px; margin: 28px 0 12px; }
-  .meta { font-size: 13px; color: #666; margin-bottom: 24px; }
+  h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: #888;
+       border-bottom: 1px solid #ddd; padding-bottom: 6px; margin: 32px 0 14px; }
+
+  /* ── Rapport-header ──────────────────────────────────────────────────────── */
+  .rapport-header { background: #fff; border-radius: 10px; padding: 24px 28px;
+                    margin-bottom: 16px; border: 1px solid #e5e7eb; }
+  .rapport-label  { font-size: 10px; text-transform: uppercase; letter-spacing: .8px;
+                    color: #aaa; margin-bottom: 4px; }
+  .rapport-team   { font-size: 28px; font-weight: 900; color: #111; margin: 0 0 6px; line-height: 1.2; }
+  .rapport-meta   { font-size: 13px; color: #888; margin: 0; }
+  .rapport-warn   { background: #fef3c7; border: 1px solid #fbbf24; border-radius: 6px;
+                    padding: 10px 14px; font-size: 13px; color: #92400e; margin-top: 12px; }
+
+  /* ── Samenvatting ────────────────────────────────────────────────────────── */
+  .samenvatting       { background: #f8fafc; border-radius: 10px; padding: 20px 24px;
+                        margin-bottom: 8px; border: 1px solid #e5e7eb; }
+  .samenvatting-titel { font-size: 10px; text-transform: uppercase; letter-spacing: .6px;
+                        color: #888; margin-bottom: 10px; }
+  .samenvatting ul    { margin: 0; padding-left: 18px; }
+  .samenvatting li    { font-size: 13px; color: #333; line-height: 1.9; }
+
+  /* ── Tabel ───────────────────────────────────────────────────────────────── */
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { text-align: left; font-size: 11px; text-transform: uppercase; color: #888; padding: 4px 8px; border-bottom: 1px solid #ddd; }
+  th { text-align: left; font-size: 11px; text-transform: uppercase; color: #888;
+       padding: 4px 8px; border-bottom: 1px solid #ddd; }
   td { padding: 6px 8px; border-bottom: 1px solid #eee; }
-  .bar-wrap { background: #eee; border-radius: 3px; height: 12px; width: 200px; }
-  .bar { height: 12px; border-radius: 3px; background: #0000ff; }
-  .badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; }
-  .consensus   { background: #d1fae5; color: #065f46; }
-  .diversiteit { background: #fef3c7; color: #92400e; }
-  .polarisatie { background: #fee2e2; color: #991b1b; }
-  .kl-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 16px; }
-  .kl { border-radius: 8px; padding: 10px 6px; text-align: center; border: 1.5px solid transparent; }
-  .kl.top { border-color: #0000ff; }
-  .kl-naam { font-size: 11px; font-weight: 700; text-transform: capitalize; }
+
+  /* ── Spiral kleur-grid ───────────────────────────────────────────────────── */
+  .kl-grid  { display: grid; grid-template-columns: repeat(6,1fr); gap: 8px; margin-bottom: 16px; }
+  .kl       { border-radius: 8px; padding: 10px 6px; text-align: center; border: 1.5px solid transparent; }
+  .kl.top   { border-color: #0000ff; }
+  .kl-naam  { font-size: 11px; font-weight: 700; text-transform: capitalize; }
   .kl-score { font-size: 15px; font-weight: 800; }
-  .kl-sd { font-size: 10px; color: #888; }
+  .kl-sd    { font-size: 10px; color: #888; }
   .kl.rood   { background:#fff0f0; } .kl.rood   .kl-score { color:#dc2626; }
   .kl.blauw  { background:#eff6ff; } .kl.blauw  .kl-score { color:#1d4ed8; }
   .kl.groen  { background:#f0fdf4; } .kl.groen  .kl-score { color:#16a34a; }
   .kl.geel   { background:#fefce8; } .kl.geel   .kl-score { color:#ca8a04; }
   .kl.oranje { background:#fff7ed; } .kl.oranje .kl-score { color:#ea580c; }
   .kl.paars  { background:#faf5ff; } .kl.paars  .kl-score { color:#7c3aed; }
-  .pat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-  .pat { background: #fff; border-radius: 8px; padding: 10px 12px; border: 1px solid #ddd; }
-  .pat-lbl { font-size: 10px; text-transform: uppercase; color: #888; }
-  .pat-val { font-size: 15px; font-weight: 800; text-transform: capitalize; color: #0000ff; margin-top: 2px; }
-  .inzicht { border-left: 4px solid #ddd; padding: 12px 14px; margin-bottom: 10px; border-radius: 0 8px 8px 0; background: #fff; }
-  .inzicht.spanning       { border-color: #f97316; background: #fff7ed; }
-  .inzicht.blinde_vlek    { border-color: #a855f7; background: #faf5ff; }
-  .inzicht.diversiteit    { border-color: #3b82f6; background: #eff6ff; }
+
+  /* ── Versus chart ────────────────────────────────────────────────────────── */
+  .vs-rij     { display: grid; grid-template-columns: 72px 1fr; align-items: start;
+                gap: 8px; margin-bottom: 10px; }
+  .vs-naam    { font-size: 12px; font-weight: 700; padding-top: 2px; text-transform: capitalize; }
+  .vs-bars    { display: flex; flex-direction: column; gap: 4px; }
+  .vs-bar-rij { display: flex; align-items: center; gap: 6px; }
+  .vs-bar-lbl { font-size: 9px; color: #bbb; width: 48px; flex-shrink: 0; text-align: right; }
+  .vs-outer   { flex: 1; background: #f0f0f0; border-radius: 2px; height: 7px; }
+  .vs-inner   { height: 7px; border-radius: 2px; }
+  .vs-score-val{ font-size: 11px; color: #888; width: 26px; flex-shrink: 0; text-align: right; }
+
+  /* ── Patronen ────────────────────────────────────────────────────────────── */
+  .pat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+  .pat      { background: #fff; border-radius: 8px; padding: 10px 12px; border: 1px solid #ddd; }
+  .pat-lbl  { font-size: 10px; text-transform: uppercase; color: #888; }
+  .pat-val  { font-size: 15px; font-weight: 800; text-transform: capitalize; color: #0000ff; margin-top: 2px; }
+
+  /* ── Inzichten ───────────────────────────────────────────────────────────── */
+  .inzicht { border-left: 4px solid #ddd; padding: 12px 14px; margin-bottom: 10px;
+             border-radius: 0 8px 8px 0; background: #fff; }
+  .inzicht.spanning        { border-color: #f97316; background: #fff7ed; }
+  .inzicht.blinde_vlek     { border-color: #a855f7; background: #faf5ff; }
+  .inzicht.diversiteit     { border-color: #3b82f6; background: #eff6ff; }
   .inzicht.veranderkracht  { border-color: #10b981; background: #f0fdf4; }
   .inzicht.balans          { border-color: #6366f1; background: #eef2ff; }
   .inzicht.spreiding       { border-color: #f59e0b; background: #fffbeb; }
   .inzicht.voorkeur_allergie{ border-color: #ec4899; background: #fdf2f8; }
   .inzicht.dynamiek        { border-color: #0000ff; background: #f0f0ff; }
-  .inzicht-type  { font-size: 10px; text-transform: uppercase; color: #888; }
-  .inzicht-label { font-size: 14px; font-weight: 700; margin: 2px 0 5px; }
-  .inzicht-tekst { font-size: 13px; color: #444; line-height: 1.6; }
-  .inzicht-opener{ font-size: 12px; color: #888; font-style: italic; margin-top: 7px; border-top: 1px solid rgba(0,0,0,.08); padding-top: 7px; }
-  .dynamiek { background: #fff; border-left: 4px solid #cbd5e1; padding: 12px 14px; margin-bottom: 10px; border-radius: 0 8px 8px 0; }
+  .inzicht-type   { font-size: 10px; text-transform: uppercase; color: #888; }
+  .inzicht-label  { font-size: 14px; font-weight: 700; margin: 2px 0 5px; }
+  .inzicht-tekst  { font-size: 13px; color: #444; line-height: 1.6; }
+  .inzicht-opener { font-size: 12px; color: #888; font-style: italic; margin-top: 7px;
+                    border-top: 1px solid rgba(0,0,0,.08); padding-top: 7px; }
+
+  /* ── Punten (sterktes / risico's / ontwikkeling) ─────────────────────────── */
+  .punt       { display: flex; gap: 12px; margin-bottom: 14px; align-items: flex-start; }
+  .punt:last-child { margin-bottom: 0; }
+  .punt-icon  { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+  .punt-titel { font-size: 13px; font-weight: 700; margin-bottom: 3px; color: #111; }
+  .punt-tekst { font-size: 13px; color: #444; line-height: 1.6; }
+
+  /* ── Teamdynamiek ────────────────────────────────────────────────────────── */
+  .dynamiek       { background: #fff; border-left: 4px solid #cbd5e1; padding: 12px 14px;
+                    margin-bottom: 10px; border-radius: 0 8px 8px 0; }
   .dynamiek-titel { font-size: 13px; font-weight: 700; color: #111; margin-bottom: 5px; }
   .dynamiek-tekst { font-size: 13px; color: #444; line-height: 1.6; }
+
+  /* ── Fout ────────────────────────────────────────────────────────────────── */
   #fout { color: #b91c1c; padding: 20px 0; }
+
+  /* ── Print ───────────────────────────────────────────────────────────────── */
+  @media print {
+    body { background: #fff; max-width: 100%; margin: 0; padding: 16px; }
+    h2 { page-break-after: avoid; }
+    .rapport-header { border: 1px solid #ddd; page-break-inside: avoid; }
+    .samenvatting   { background: #f8fafc !important; -webkit-print-color-adjust: exact; }
+    .inzicht, .dynamiek, .punt { page-break-inside: avoid; }
+  }
 </style>
 </head>
 <body>
@@ -58,14 +116,14 @@
 
 <script>
 // ── Configuratie ──────────────────────────────────────────────────────────────
-// URL-params (?code=...&token=...) hebben voorrang op de hardcoded waarden.
-// Zo werken links vanuit admin.html automatisch zonder aanpassing.
 const _p = new URLSearchParams(location.search);
 const TEAM_CODE   = _p.get('code')  || 'testteam';
 const ADMIN_TOKEN = _p.get('token') || 'test-token-123';
 
-const EMOJI = { rood:'🔴', blauw:'🔵', groen:'🟢', geel:'🟡', oranje:'🟠', paars:'🟣' };
-const KLEUREN = ['rood','blauw','groen','geel','oranje','paars'];
+const EMOJI     = { rood:'🔴', blauw:'🔵', groen:'🟢', geel:'🟡', oranje:'🟠', paars:'🟣' };
+const KLEUREN   = ['rood','blauw','groen','geel','oranje','paars'];
+const KLEUR_HEX = { rood:'#dc2626', blauw:'#1d4ed8', groen:'#16a34a',
+                    geel:'#ca8a04', oranje:'#ea580c', paars:'#7c3aed' };
 
 function topKey(obj) {
   return Object.entries(obj).sort((a,b) => b[1]-a[1])[0][0];
@@ -73,8 +131,8 @@ function topKey(obj) {
 function fmt(d) {
   return new Date(d).toLocaleDateString('nl-NL',{day:'numeric',month:'long',year:'numeric'});
 }
-// ── Teamdynamiek ──────────────────────────────────────────────────────────────
 
+// ── Teamdynamiek (ongewijzigd) ────────────────────────────────────────────────
 function buildDynamics(a) {
   const dynamics = [];
   const dom  = a.patronen.dominante_hoek;
@@ -86,7 +144,6 @@ function buildDynamics(a) {
   const vkTop = a.patronen.top_voorkeur;
   const alTop = a.patronen.top_allergie;
 
-  // 1. Besluitvorming — afhankelijk van dominante + zwakste hoek
   const besluitMap = {
     strategie: {
       cultuur:   'Besluiten worden vooral genomen op basis van richting en doelen. Omdat verbinding minder sterk meeweegt, ontstaat draagvlak waarschijnlijk pas later en kunnen besluiten opnieuw ter tafel komen.',
@@ -107,7 +164,6 @@ function buildDynamics(a) {
       `Besluiten worden vooral genomen vanuit ${dom}, terwijl ${zwak} minder sterk meeweegt. Verwachtingen blijven daardoor waarschijnlijk impliciet en komen pas later aan de oppervlakte.`,
   });
 
-  // 2. Samenwerking — cultuur-score × sd
   let samTekst;
   if      (cv > 35 && cSd > 10) samTekst = 'Samenwerking is voor het team belangrijk, maar wordt niet door iedereen op dezelfde manier beleefd. Verschillen in verwachting kunnen daardoor lang onder de oppervlakte blijven en pas bij spanning zichtbaar worden.';
   else if (cv > 35 && cSd <= 10) samTekst = 'Het team ervaart de samenwerking overwegend prettig en lijkt daarin op één lijn te zitten. Het risico is dat tegenspraak of schuring minder snel op tafel komt, omdat de goede sfeer gauw als norm gaat gelden.';
@@ -115,7 +171,6 @@ function buildDynamics(a) {
   else                            samTekst = 'Verbinding staat niet nadrukkelijk voorop en het team lijkt daarin op elkaar afgestemd. Zolang het werk loopt gaat dat goed, maar bij spanning is er weinig gedeelde basis om op terug te vallen.';
   dynamics.push({ titel: 'Samenwerking', tekst: samTekst });
 
-  // 3. Uitvoering — structuur vs strategie
   let uitvTekst;
   if      (tv - sv >= 15) uitvTekst = 'Er wordt serieus gewerkt en veel opgepakt. Omdat een gedeelde koers minder sterk meeweegt, kost het waarschijnlijk extra tijd om richting, rolverdeling en uitvoering op één lijn te krijgen.';
   else if (sv - tv >= 15) uitvTekst = 'Er is duidelijkheid over waar het team heen wil. Concrete afspraken en uitvoering lopen daarop achteraan, waardoor plannen niet altijd in de praktijk landen.';
@@ -124,11 +179,9 @@ function buildDynamics(a) {
   else                          uitvTekst = 'Koers en uitvoering liggen dicht bij elkaar, zonder dat een van beide de lead neemt. Dat geeft speelruimte, maar doorpakken en knopen doorhakken kan daardoor lastiger gaan.';
   dynamics.push({ titel: 'Uitvoering', tekst: uitvTekst });
 
-  // 4. Verandering & energie — top voorkeur + allergie
-  const vernieuws = ['geel', 'oranje'];
-  const stabiel   = ['paars', 'blauw'];
+  const vernieuws = ['geel','oranje'], stabiel = ['paars','blauw'];
   let energieTekst;
-  if      (vernieuws.includes(vkTop) && stabiel.includes(alTop))
+  if (vernieuws.includes(vkTop) && stabiel.includes(alTop))
     energieTekst = `Er zit veel energie op vernieuwing en vooruitgang. Wat helpt om te vertragen, af te hechten en te borgen (${alTop}) krijgt minder vanzelf aandacht, waardoor veranderingen waarschijnlijk makkelijker starten dan landen.`;
   else if (stabiel.includes(vkTop) && vernieuws.includes(alTop))
     energieTekst = `Er is veel behoefte aan houvast en stabiliteit. Vernieuwing en experiment (${alTop}) liggen minder voor de hand, waardoor nieuwe ideeën er waarschijnlijk langzamer doorheen komen.`;
@@ -143,62 +196,267 @@ function buildDynamics(a) {
   return dynamics.slice(0, 4);
 }
 
-// ── Render ────────────────────────────────────────────────────────────────────
+// ── Executive summary ─────────────────────────────────────────────────────────
+function buildSummary(a) {
+  const dom   = a.patronen.dominante_hoek;
+  const zwak  = a.patronen.zwakste_hoek;
+  const vkTop = a.patronen.top_voorkeur;
+  const alTop = a.patronen.top_allergie;
+  const sv = a.driehoek.strategie.mean;
+  const cv = a.driehoek.cultuur.mean;
+  const tv = a.driehoek.structuur.mean;
+  const spread = Math.max(sv,cv,tv) - Math.min(sv,cv,tv);
 
+  const domTxt = {
+    strategie: 'sterk in visie en richting geven — de grote lijn is het natuurlijke thuis van dit team',
+    cultuur:   'sterk in verbinding en mensgerichtheid — samenwerking kost relatief weinig energie',
+    structuur: 'sterk in uitvoering en concrete afspraken — er wordt gedaan en geleverd',
+  };
+  const zwakTxt = {
+    strategie: 'een gedeelde koers en heldere prioriteiten zijn het zwakste punt en vragen expliciete aandacht',
+    cultuur:   'onderlinge afstemming en verbinding zijn minder vanzelfsprekend en verdienen meer ruimte',
+    structuur: 'duidelijkheid over rollen en taakverdeling is het kwetsbaarste punt van het team',
+  };
+  const vkTxt = {
+    rood:   'de meeste energie gaat naar direct handelen en knopen doorhakken',
+    blauw:  'de meeste energie gaat naar orde, kaders en betrouwbare afspraken',
+    groen:  'de meeste energie gaat naar samenwerken en iedereen meenemen',
+    geel:   'de meeste energie gaat naar overzicht, verbanden leggen en nieuwe invalshoeken',
+    oranje: 'de meeste energie gaat naar resultaat boeken en vooruitkomen',
+    paars:  'de meeste energie gaat naar zekerheid, verbondenheid en continuïteit',
+  };
+  const alTxt = {
+    rood:   'directheid, confrontatie en snel besluiten nemen liggen het team moeilijk',
+    blauw:  'strakke regels en vaste procedures wekken weerstand',
+    groen:  'breed afstemmen en consensus zoeken kost het team energie',
+    geel:   'abstracte analyses en open vraagstukken zonder direct antwoord worden vermeden',
+    oranje: 'prestatiedruk en scherpe prestatiecriteria werken averechts',
+    paars:  'vasthouden aan tradities en vaste routines stuit op weerstand',
+  };
+
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const bullets = [
+    `Het team is ${domTxt[dom]}.`,
+    `${cap(zwakTxt[zwak])}.`,
+    `${cap(vkTxt[vkTop])}.`,
+    `${cap(alTxt[alTop])}.`,
+  ];
+  if (spread >= 12) {
+    bullets.push('Er zijn opvallende onderlinge verschillen — de profielen in het team lopen uiteen en vragen expliciete afstemming.');
+  } else if (a.driehoek[dom].sd < 6) {
+    bullets.push(`Over het sterkste thema — ${dom} — staat het team opvallend eensgezind. Dat geeft een heldere, stabiele basis.`);
+  }
+  return bullets;
+}
+
+// ── Voorkeur vs allergie grafiek ──────────────────────────────────────────────
+function buildVersusChart(a) {
+  const allVals = KLEUREN.flatMap(k => [a.spiral.voorkeur[k].mean, a.spiral.allergie[k].mean]);
+  const maxVal  = Math.max(...allVals, 1);
+  return '<div class="vs-wrap">' + KLEUREN.map(k => {
+    const vk  = a.spiral.voorkeur[k].mean;
+    const al  = a.spiral.allergie[k].mean;
+    const hex = KLEUR_HEX[k];
+    const vkW = (vk / maxVal * 100).toFixed(1);
+    const alW = (al / maxVal * 100).toFixed(1);
+    return `
+      <div class="vs-rij">
+        <div class="vs-naam">${EMOJI[k]} ${k}</div>
+        <div class="vs-bars">
+          <div class="vs-bar-rij">
+            <span class="vs-bar-lbl">voorkeur</span>
+            <div class="vs-outer"><div class="vs-inner" style="width:${vkW}%;background:${hex}"></div></div>
+            <span class="vs-score-val">${vk}</span>
+          </div>
+          <div class="vs-bar-rij">
+            <span class="vs-bar-lbl">allergie</span>
+            <div class="vs-outer"><div class="vs-inner" style="width:${alW}%;background:${hex};opacity:.35"></div></div>
+            <span class="vs-score-val">${al}</span>
+          </div>
+        </div>
+      </div>`;
+  }).join('') + '</div>';
+}
+
+// ── Sterktes ──────────────────────────────────────────────────────────────────
+function buildSterktes(a) {
+  const dom   = a.patronen.dominante_hoek;
+  const vkTop = a.patronen.top_voorkeur;
+  const domSd = a.driehoek[dom].sd;
+  const sv    = a.driehoek.strategie.mean;
+  const tv    = a.driehoek.structuur.mean;
+
+  const stHoek = {
+    strategie: { t:'Visievermogen',          tekst:'Het team denkt van nature op de grote lijn en formuleert richting en prioriteiten met gemak. Dat maakt het team waardevol in gesprekken over koers en beleid.' },
+    cultuur:   { t:'Verbindend vermogen',    tekst:'Mensen worden meegenomen, samenwerking is een bewust belang en de sfeer is onderdeel van het werk. Dat schept vertrouwen en verlaagt de drempel om problemen vroeg te benoemen.' },
+    structuur: { t:'Uitvoeringskracht',      tekst:'Afspraken worden nagekomen en werk wordt afgemaakt. Betrouwbaarheid en concreetheid zijn herkenbare kenmerken — het team levert wat het belooft.' },
+  };
+  const stSpi = {
+    rood:   { t:'Daadkracht en besluitvaardigheid', tekst:'Er is energie om te handelen en door te pakken. Besluiten worden genomen, niet eindeloos uitgesteld.' },
+    blauw:  { t:'Betrouwbaarheid en consistentie',  tekst:'Het team neemt afspraken serieus en levert wat het belooft. Dat schept vertrouwen bij collega\'s en stakeholders.' },
+    groen:  { t:'Warmte en inclusiviteit',           tekst:'Niemand wordt achtergelaten, elk perspectief telt. Dat creëert draagvlak en verlaagt de drempel om problemen vroeg aan te kaarten.' },
+    geel:   { t:'Systemisch denkvermogen',           tekst:'Het team overziet het grotere geheel, legt verbanden en doorziet patronen. Waardevol bij complexe vraagstukken.' },
+    oranje: { t:'Resultaatgerichtheid en drive',     tekst:'Er zit ambitie en drive in het team. Vooruitgang is een gedeeld belang en het team is bereid hard voor te werken.' },
+    paars:  { t:'Saamhorigheid en loyaliteit',       tekst:'Er is een stevig gevoel van verbondenheid. Mensen staan voor elkaar in en de onderlinge band is een echte kracht.' },
+  };
+
+  const punten = [stHoek[dom], stSpi[vkTop]];
+  if (domSd < 7) {
+    punten.push({ t:'Gedeeld zelfbeeld', tekst:`Over het dominante thema — ${dom} — is het team het opvallend eens. Dat maakt communicatie eenvoudiger en vermindert ruis.` });
+  } else if (sv > 30 && tv > 30) {
+    punten.push({ t:'Brede inzetbaarheid', tekst:'Het team beschikt over zowel visievermogen als uitvoeringskracht. Die combinatie is niet vanzelfsprekend en maakt het team flexibel inzetbaar.' });
+  } else {
+    punten.push({ t:'Waardevolle diversiteit', tekst:'De profielen in het team lopen uiteen. Als die verschillen bewust worden ingezet, zijn ze een rijkdom — ieder brengt een ander perspectief mee.' });
+  }
+  return punten.slice(0, 3);
+}
+
+// ── Risico's ──────────────────────────────────────────────────────────────────
+function buildRisicos(a) {
+  const dom   = a.patronen.dominante_hoek;
+  const zwak  = a.patronen.zwakste_hoek;
+  const alTop = a.patronen.top_allergie;
+  const sv = a.driehoek.strategie.mean;
+  const cv = a.driehoek.cultuur.mean;
+  const tv = a.driehoek.structuur.mean;
+  const maxSd = Math.max(a.driehoek.strategie.sd, a.driehoek.cultuur.sd, a.driehoek.structuur.sd);
+  const spread = Math.max(sv,cv,tv) - Math.min(sv,cv,tv);
+
+  const rHoek = {
+    strategie: { t:'Geen gedeelde koers',                       tekst:'Zonder gedeelde richting werkt iedereen vanuit eigen aannames. Goed uitvoerend werk zonder heldere prioriteiten leidt tot veel energie voor de verkeerde dingen.' },
+    cultuur:   { t:'Kwetsbare samenwerking bij druk',           tekst:'Onderlinge afstemming loopt goed zolang er geen spanning is. Bij druk of conflict ontbreekt een gedeelde basis om op terug te vallen.' },
+    structuur: { t:'Onduidelijkheid over rollen en taken',      tekst:'Heldere rolverdeling en expliciete afspraken zijn niet het sterkste punt. Zolang alles goed gaat werkt dat — bij problemen weet niemand wie aan zet is.' },
+  };
+  const rSpi = {
+    rood:   { t:'Conflictvermijding remt besluitvorming',       tekst:'Scherpe keuzes, grenzen stellen en directe feedback liggen moeilijk. Spanningen sluimeren daardoor langer dan nodig.' },
+    blauw:  { t:'Weerstand tegen borging en procedures',        tekst:'Vaste procedures roepen weerstand op. Dat kan vernieuwen makkelijker maken, maar leidt ook tot onvoldoende borging van wat werkt.' },
+    groen:  { t:'Besluitvorming traag door brede afstemming',   tekst:'Iedereen meenemen kost moeite of energie. Het risico is dat besluiten worden doorgedrukt of juist eindeloos worden uitgesteld.' },
+    geel:   { t:'Moeite met open vraagstukken',                 tekst:'Abstracte analyses zonder direct handelingsperspectief werken frustrerend. Het team trekt daardoor soms te snel conclusies.' },
+    oranje: { t:'Prestatiedruk werkt averechts',                tekst:'Scherpe prestatiecriteria en competitie wekken weerstand. Dat beschermt de samenwerking maar kan ambitie en groeidoelen dempen.' },
+    paars:  { t:'Veranderingen sluiten slecht af',              tekst:'Vasthouden aan wat al was stuit op weerstand. Veranderingen gaan daardoor snel — maar borging en goede afronding krijgen te weinig aandacht.' },
+  };
+
+  const punten = [rHoek[zwak], rSpi[alTop]];
+  if (maxSd > 12 || spread >= 16) {
+    punten.push({ t:'Grote onderlinge verschillen', tekst:'Niet iedereen kijkt op dezelfde manier naar samenwerking, uitvoering of richting. Die verschillen vragen expliciete aandacht — anders worden ze een bron van verwarring.' });
+  } else if (dom === 'cultuur' && alTop === 'rood') {
+    punten.push({ t:'Harmonie kan besluitvorming remmen', tekst:'Een sterk cultuurgedreven team dat moeite heeft met directheid loopt het risico dat lastige keuzes worden uitgesteld om de sfeer te bewaren.' });
+  } else if (a.meta.n <= 3) {
+    punten.push({ t:'Beperkte teamgrootte', tekst:'Met weinig respondenten is elk individueel profiel sterk bepalend voor het totaalbeeld. De analyse is minder robuust dan bij een groter team.' });
+  } else {
+    punten.push({ t:`Blinde vlek voor ${zwak}`, tekst:`${zwak.charAt(0).toUpperCase()+zwak.slice(1)} scoort het laagst — en dat thema krijgt waarschijnlijk ook de minste aandacht in gesprekken. Pas als het echt ontbreekt, valt het op.` });
+  }
+  return punten.slice(0, 3);
+}
+
+// ── Ontwikkelrichtingen ───────────────────────────────────────────────────────
+function buildOntwikkeling(a) {
+  const dom   = a.patronen.dominante_hoek;
+  const zwak  = a.patronen.zwakste_hoek;
+  const alTop = a.patronen.top_allergie;
+  const domSd = a.driehoek[dom].sd;
+
+  const rZwak = {
+    strategie: { t:'Werk aan gedeelde richting',          tekst:'Bespreek als team wat de prioriteiten zijn en wie welke keuzes maakt. Een korte afstemming aan het begin van een periode voorkomt veel ruis onderweg.' },
+    cultuur:   { t:'Investeer in de samenwerking zelf',   tekst:'Plan regelmatig een gesprek over hoe de samenwerking loopt — los van het werk. Kleine aanpassingen in hoe je met elkaar communiceert, hebben grote impact.' },
+    structuur: { t:'Maak rollen en afspraken expliciet',  tekst:'Leg vast wie verantwoordelijk is voor wat. Niet als bureaucratisch instrument, maar als gedeeld kader — zodat iedereen weet waar hij of zij op kan rekenen.' },
+  };
+  const rAl = {
+    rood:   { t:'Oefen met directheid en besluitvaardigheid',       tekst:'Maak ruimte voor korte, scherpe gesprekken en oefen met het uitspreken van een standpunt zonder eerst consensus te zoeken. Directheid is een vaardigheid.' },
+    blauw:  { t:'Zorg voor borging en structuur',                   tekst:'Afkeer van regels laat verandering snel starten maar slecht landen. Kies bewust een paar afspraken die je vasthoudt — en durf die te handhaven.' },
+    groen:  { t:'Betrek mensen eerder en explicieter',              tekst:'Als afstemmen energie kost, is de verleiding om het over te slaan groot. Juist dan helpt een korte maar expliciete check: is iedereen aan boord?' },
+    geel:   { t:'Maak ruimte voor verkenning zonder direct antwoord', tekst:'Reserveer tijd voor vraagstukken die niet meteen oplosbaar zijn. Dat voelt inefficiënt maar levert betere besluiten op de lange termijn.' },
+    oranje: { t:'Vertaal ambitie naar concrete, inspirerende doelen', tekst:'Prestatiedruk werkt averechts, maar ambitie is een kracht. Formuleer doelen die inspireren zonder te bedreigen — klein en concreet werkt beter dan groot en abstract.' },
+    paars:  { t:'Waardeer bewust wat stabiel en bewezen is',        tekst:'Niet alles wat werkt hoeft te veranderen. Maak de keuze expliciet wat je behoudt — dat geeft houvast aan wie behoefte heeft aan continuïteit.' },
+  };
+
+  const richtingen = [rZwak[zwak], rAl[alTop]];
+  if (dom === 'cultuur' && zwak === 'structuur') {
+    richtingen.push({ t:'Vertaal goede sfeer naar heldere afspraken', tekst:'De verbinding is er. Gebruik die basis om ook explicieter te worden over wie wat doet. Een sterk team heeft beide nodig.' });
+  } else if (dom === 'strategie' && zwak === 'cultuur') {
+    richtingen.push({ t:'Investeer in de menselijke kant van besluiten', tekst:'Richting bepalen gaat goed. Zorg dat besluiten ook landen door mensen eerder te betrekken en aandacht te geven aan hoe iets wordt gebracht.' });
+  } else if (dom === 'structuur' && zwak === 'strategie') {
+    richtingen.push({ t:'Verbind uitvoering aan een heldere koers', tekst:'Sterk in het doen. Zorg dat duidelijk is waaróm — zodat energie niet gaat naar de verkeerde prioriteiten.' });
+  } else if (domSd > 10) {
+    richtingen.push({ t:'Bespreek de onderlinge verschillen expliciet', tekst:'De profielen in het team lopen uiteen. Maak dat een gespreksonderwerp: wat brengt ieder mee, en hoe kunnen die perspectieven elkaar versterken?' });
+  } else {
+    richtingen.push({ t:`Verken wat het team moeilijk vindt`, tekst:`${alTop.charAt(0).toUpperCase()+alTop.slice(1)} roept weerstand op. Bespreek wanneer die weerstand terecht is — en wanneer het de boel blokkeert.` });
+  }
+  return richtingen;
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
 function render(a) {
   const m = a.meta;
 
-  // Leden
-  const leden = m.leden.map((l,i) => `<tr>
-    <td>${i+1}</td>
-    <td><strong>${l.naam}</strong></td>
-    <td>${l.rol || '–'}</td>
-    <td>${fmt(l.created_at)}</td>
-  </tr>`).join('');
+  // 1 ── Header
+  const datumRange = m.eerste_inzending === m.laatste_inzending
+    ? fmt(m.eerste_inzending)
+    : `${fmt(m.eerste_inzending)} – ${fmt(m.laatste_inzending)}`;
+  const warn = m.n < 3
+    ? '<div class="rapport-warn">⚠️ Minder dan 3 respondenten — de analyse is indicatief, niet representatief.</div>'
+    : '';
+  const header = `
+    <div class="rapport-header">
+      <div class="rapport-label">Teamrapport</div>
+      <h1 class="rapport-team">${m.team_code}</h1>
+      <div class="rapport-meta">
+        ${m.n} respondent${m.n === 1 ? '' : 'en'} &nbsp;·&nbsp; ${datumRange}
+        &nbsp;·&nbsp; gegenereerd ${new Date().toLocaleDateString('nl-NL',{day:'numeric',month:'long',year:'numeric'})}
+      </div>
+      ${warn}
+    </div>`;
 
-  // Driehoek SVG — hoeken: Strategie=boven, Structuur=linksonder, Cultuur=rechtsonder
-  // Driehoekhoeken (SVG-coördinaten, ruimte voor labels buiten de driehoek)
-  const Sx=210, Sy=115;
-  const Tx=52,  Ty=300;
-  const Cx=368, Cy=300;
+  // 2 ── Samenvatting
+  const bullets = buildSummary(a);
+  const samenvatting = `
+    <div class="samenvatting">
+      <div class="samenvatting-titel">Samenvatting</div>
+      <ul>${bullets.map(b => `<li>${b}</li>`).join('')}</ul>
+    </div>`;
+
+  // 3 ── Teamleden
+  const ledenRijen = m.leden.map((l,i) => `<tr>
+    <td>${i+1}</td><td><strong>${l.naam}</strong></td>
+    <td>${l.rol||'–'}</td><td>${fmt(l.created_at)}</td>
+  </tr>`).join('');
+  const ledenTabel = `
+    <h2>Teamleden</h2>
+    <table><thead><tr><th>#</th><th>Naam</th><th>Rol</th><th>Datum</th></tr></thead>
+    <tbody>${ledenRijen}</tbody></table>`;
+
+  // 4 ── Driehoek SVG
+  const Sx=210,Sy=115, Tx=52,Ty=300, Cx=368,Cy=300;
   const sv=a.driehoek.strategie.mean, tv=a.driehoek.structuur.mean, cv=a.driehoek.cultuur.mean;
   const tot=sv+tv+cv;
-  // Barycentrische positie van het datapunt
   const px=((sv/tot)*Sx+(tv/tot)*Tx+(cv/tot)*Cx).toFixed(1);
   const py=((sv/tot)*Sy+(tv/tot)*Ty+(cv/tot)*Cy).toFixed(1);
   const dom=a.patronen.dominante_hoek;
   const dc={strategie:'#0000ff',cultuur:'#10b981',structuur:'#f97316'};
   const sub={strategie:'richting',cultuur:'beleving',structuur:'duidelijkheid'};
-  // Helper: SVG-tekstblok per hoek (naam, score, subtitel, sd)
-  function mkCorner(naam, val, lx, anchor, y0) {
-    const isDom = naam===dom;
-    const kleur = isDom ? dc[naam] : '#bbb';
-    const fs    = isDom ? 26 : 19;
-    const nkleur= isDom ? kleur : '#999';
+  function mkCorner(naam,val,lx,anchor,y0) {
+    const isDom=naam===dom, kleur=isDom?dc[naam]:'#bbb', fs=isDom?26:19, nk=isDom?kleur:'#999';
     return `<text x="${lx}" text-anchor="${anchor}" font-family="Arial,sans-serif">
-      <tspan x="${lx}" y="${y0}" font-size="10" font-weight="700" letter-spacing=".4" fill="${nkleur}">${naam.toUpperCase()}</tspan>
+      <tspan x="${lx}" y="${y0}" font-size="10" font-weight="700" letter-spacing=".4" fill="${nk}">${naam.toUpperCase()}</tspan>
       <tspan x="${lx}" dy="22" font-size="${fs}" font-weight="900" fill="${kleur}">${val}</tspan>
       <tspan x="${lx}" dy="16" font-size="10" fill="#aaa">${sub[naam]}</tspan>
-      <tspan x="${lx}" dy="13" font-size="9" fill="#ccc">sd ${a.driehoek[naam].sd} · <tspan fill="#ccc">${a.driehoek[naam].spread}</tspan></tspan>
+      <tspan x="${lx}" dy="13" font-size="9" fill="#ccc">sd ${a.driehoek[naam].sd} · ${a.driehoek[naam].spread}</tspan>
     </text>`;
   }
-  const dims=`
+  const driehoek = `
+    <h2>Strategie · Cultuur · Structuur</h2>
     <svg viewBox="0 0 420 415" width="100%" style="max-width:420px;display:block;margin:0 auto">
-      <!-- driehoek outline -->
-      <polygon points="${Sx},${Sy} ${Tx},${Ty} ${Cx},${Cy}"
-               fill="#f9f9ff" stroke="#c8c8c8" stroke-width="1.5"/>
-      <!-- hoek-labels buiten de driehoek -->
-      ${mkCorner('strategie', sv, 210, 'middle', 20)}
-      ${mkCorner('structuur', tv, 52,  'middle', 318)}
-      ${mkCorner('cultuur',   cv, 368, 'middle', 318)}
-      <!-- barycentrisch punt -->
+      <polygon points="${Sx},${Sy} ${Tx},${Ty} ${Cx},${Cy}" fill="#f9f9ff" stroke="#c8c8c8" stroke-width="1.5"/>
+      ${mkCorner('strategie',sv,210,'middle',20)}
+      ${mkCorner('structuur',tv,52,'middle',318)}
+      ${mkCorner('cultuur',cv,368,'middle',318)}
       <circle cx="${px}" cy="${py}" r="6" fill="#0000ff" opacity=".85"/>
     </svg>
     <p style="text-align:center;font-size:12px;color:#888;margin:6px 0 0">
       Sterk in <strong style="color:${dc[dom]}">${dom}</strong> · ${a.patronen.zwakste_hoek} vraagt aandacht
     </p>`;
 
-  // Spiral helper
+  // 5 ── Spiral grids + versus chart
   function spiralGrid(type) {
     const obj = a.spiral[type];
     const top = topKey(Object.fromEntries(KLEUREN.map(k => [k, obj[k].mean])));
@@ -210,63 +468,78 @@ function render(a) {
         <div class="kl-sd">sd ${obj[k].sd}</div>
       </div>`).join('');
   }
-
-  // Patronen
-  const pat = a.patronen;
-  const pats = [
-    ['Dominante hoek',  pat.dominante_hoek],
-    ['Zwakste hoek',    pat.zwakste_hoek],
-    ['Top voorkeur',    `${EMOJI[pat.top_voorkeur]||''} ${pat.top_voorkeur}`],
-    ['Top allergie',    `${EMOJI[pat.top_allergie]||''} ${pat.top_allergie}`],
-  ].map(([l,v]) => `<div class="pat"><div class="pat-lbl">${l}</div><div class="pat-val">${v}</div></div>`).join('');
-
-  // Inzichten
-  const inz = (a.inzichten||[]).map(i => `
-    <div class="inzicht ${i.type}">
-      <div class="inzicht-type">${i.type.replace('_',' ')}</div>
-      <div class="inzicht-label">${i.label}</div>
-      <div class="inzicht-tekst">${i.tekst}</div>
-      <div class="inzicht-opener">${i.gespreksopener}</div>
-    </div>`).join('') || '<p style="color:#888;font-size:13px">Geen duidelijke patronen gevonden.</p>';
-
-  const waarsch = a.waarschuwing
-    ? `<p style="background:#fef3c7;border:1px solid #fbbf24;border-radius:6px;padding:10px 14px;font-size:13px;color:#92400e">⚠️ ${a.waarschuwing}</p>`
-    : '';
-
-  return `
-    <h1>${m.team_code}</h1>
-    <div class="meta">${m.n} respondenten &nbsp;·&nbsp; ${fmt(m.eerste_inzending)} – ${fmt(m.laatste_inzending)}</div>
-    ${waarsch}
-
-    <h2>Teamleden</h2>
-    <table><thead><tr><th>#</th><th>Naam</th><th>Rol</th><th>Datum</th></tr></thead>
-    <tbody>${leden}</tbody></table>
-
-    <h2>Strategie · Cultuur · Structuur</h2>
-    ${dims}
-
-    <h2>Spiral Dynamics — Voorkeur</h2>
+  const spiral = `
+    <h2>Voorkeur</h2>
     <div class="kl-grid">${spiralGrid('voorkeur')}</div>
-
-    <h2>Spiral Dynamics — Allergie</h2>
+    <h2>Allergie</h2>
     <div class="kl-grid">${spiralGrid('allergie')}</div>
+    <h2>Voorkeur versus allergie per kleur</h2>
+    ${buildVersusChart(a)}`;
 
+  // 6 ── Patronen
+  const pat = a.patronen;
+  const patronen = `
     <h2>Patronen</h2>
-    <div class="pat-grid">${pats}</div>
+    <div class="pat-grid">
+      ${[['Dominante hoek',pat.dominante_hoek],['Zwakste hoek',pat.zwakste_hoek],
+         ['Top voorkeur',`${EMOJI[pat.top_voorkeur]||''} ${pat.top_voorkeur}`],
+         ['Top allergie',`${EMOJI[pat.top_allergie]||''} ${pat.top_allergie}`]]
+        .map(([l,v])=>`<div class="pat"><div class="pat-lbl">${l}</div><div class="pat-val">${v}</div></div>`)
+        .join('')}
+    </div>`;
 
+  // 7 ── Inzichten (bestaand)
+  const inzichten = `
     <h2>Inzichten</h2>
-    ${inz}
+    ${(a.inzichten||[]).map(i=>`
+      <div class="inzicht ${i.type}">
+        <div class="inzicht-type">${i.type.replace('_',' ')}</div>
+        <div class="inzicht-label">${i.label}</div>
+        <div class="inzicht-tekst">${i.tekst}</div>
+        <div class="inzicht-opener">${i.gespreksopener}</div>
+      </div>`).join('') || '<p style="color:#888;font-size:13px">Geen duidelijke patronen gevonden.</p>'}`;
 
+  // 8 ── Sterktes
+  const sterktes = `
+    <h2>Sterktes van het team</h2>
+    ${buildSterktes(a).map(p=>`
+      <div class="punt">
+        <div class="punt-icon">✅</div>
+        <div><div class="punt-titel">${p.t}</div><div class="punt-tekst">${p.tekst}</div></div>
+      </div>`).join('')}`;
+
+  // 9 ── Risico's
+  const risicos = `
+    <h2>Risico's en ontwikkelpunten</h2>
+    ${buildRisicos(a).map(p=>`
+      <div class="punt">
+        <div class="punt-icon">⚠️</div>
+        <div><div class="punt-titel">${p.t}</div><div class="punt-tekst">${p.tekst}</div></div>
+      </div>`).join('')}`;
+
+  // 10 ── Teamdynamiek (bestaand)
+  const dynamiek = `
     <h2>Teamdynamiek</h2>
-    ${buildDynamics(a).map(d => `
+    ${buildDynamics(a).map(d=>`
       <div class="dynamiek">
         <div class="dynamiek-titel">${d.titel}</div>
         <div class="dynamiek-tekst">${d.tekst}</div>
       </div>`).join('')}`;
+
+  // 11 ── Ontwikkelrichtingen
+  const ontwikkeling = `
+    <h2>Concrete ontwikkelrichtingen</h2>
+    ${buildOntwikkeling(a).map(p=>`
+      <div class="punt">
+        <div class="punt-icon">→</div>
+        <div><div class="punt-titel">${p.t}</div><div class="punt-tekst">${p.tekst}</div></div>
+      </div>`).join('')}`;
+
+  return [header, samenvatting, ledenTabel, driehoek, spiral,
+          patronen, inzichten, sterktes, risicos, dynamiek, ontwikkeling].join('\n');
 }
 
 // ── Fetch ─────────────────────────────────────────────────────────────────────
-
 fetch(`/api/team/${encodeURIComponent(TEAM_CODE)}`, {
   headers: { 'X-Admin-Token': ADMIN_TOKEN }
 })
