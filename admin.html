@@ -74,9 +74,15 @@
   .filter-toggle { font-size: 13px; color: #555; display: flex; align-items: center; gap: 5px;
     cursor: pointer; white-space: nowrap; user-select: none; }
 
-  /* Test badge */
+  /* Test badge + dim */
   .badge-test { display: inline-block; font-size: 10px; font-weight: 700;
     padding: 1px 6px; border-radius: 10px; background: #fef3c7; color: #92400e; margin-left: 4px; }
+  .lid-test td { opacity: .5; }
+  .ind-rij.is-test { opacity: .5; }
+  .btn-mark-test   { background: #fef3c7; color: #92400e; }
+  .btn-mark-test:hover   { background: #fde68a; }
+  .btn-unmark-test { background: #f3f4f6; color: #374151; }
+  .btn-unmark-test:hover { background: #e5e7eb; }
 
   /* Uitgesloten badge + rij-dimming */
   .badge-uitgesloten { display: inline-block; font-size: 10px; font-weight: 700;
@@ -271,9 +277,13 @@ function renderData(subs) {
     const uitslBtn = s.excluded_from_team
       ? `<button onclick="toggleUitsluiting('${s.id}')" class="btn btn-include">Meenemen</button>`
       : `<button onclick="toggleUitsluiting('${s.id}')" class="btn btn-exclude">Uitsluiten</button>`;
+    const testBtn = s.is_test
+      ? `<button onclick="toggleTest('${s.id}')" class="btn btn-unmark-test">Maak echt</button>`
+      : `<button onclick="toggleTest('${s.id}')" class="btn btn-mark-test">Markeer test</button>`;
     return `<a href="/?rapport=${s.id}" target="_blank" class="btn btn-ghost">Rapport</a>
             <button onclick='openModal(${d})' class="btn btn-ghost">Bewerk</button>
             ${uitslBtn}
+            ${testBtn}
             <button onclick="verwijder('${s.id}','${esc(s.naam)}')" class="btn btn-danger">Verwijder</button>`;
   }
   function testBadge(s)       { return s.is_test          ? ' <span class="badge-test">test</span>'             : ''; }
@@ -287,7 +297,7 @@ function renderData(subs) {
         const t=teams[key];
         const url=`team.html?code=${encodeURIComponent(t.label)}&token=${encodeURIComponent(TOKEN)}`;
         const rijen=t.leden.map(l=>`
-          <tr class="${l.excluded_from_team ? 'lid-uitgesloten' : ''}">
+          <tr class="${l.excluded_from_team ? 'lid-uitgesloten' : l.is_test ? 'lid-test' : ''}">
             <td>${esc(l.naam)}${testBadge(l)}${uitgeslotenBadge(l)}</td>
             <td style="color:#888">${esc(l.rol||'–')}</td>
             <td style="color:#888">${fmt(l.created_at)}</td>
@@ -318,7 +328,7 @@ function renderData(subs) {
   document.getElementById('ind-lijst').innerHTML = ind.length===0
     ? '<p class="leeg">Geen inzendingen zonder team.</p>'
     : ind.map(s=>`
-        <div class="ind-rij">
+        <div class="ind-rij${s.is_test ? ' is-test' : ''}">
           <div>
             <div class="ind-naam">${esc(s.naam)}${testBadge(s)}</div>
             <div class="ind-sub">${esc(s.email)} &nbsp;·&nbsp; ${fmt(s.created_at)}</div>
@@ -374,8 +384,27 @@ async function toggleUitsluiting(id) {
       email:              s.email,
       team_code:          s.team_code || null,
       rol:                s.rol       || null,
-      is_test:            s.is_test   ? 1 : 0,
+      is_test:            s.is_test            ? 1 : 0,
       excluded_from_team: s.excluded_from_team ? 0 : 1,
+    }),
+  });
+  if (!r.ok) { alert('Actie mislukt.'); return; }
+  laadData();
+}
+
+async function toggleTest(id) {
+  const s = allSubs.find(x => x.id === id);
+  if (!s) return;
+  const r = await fetch(`/api/admin/submissions/${id}`, {
+    method:  'PATCH',
+    headers: { 'Content-Type':'application/json', 'X-Admin-Token': TOKEN },
+    body:    JSON.stringify({
+      naam:               s.naam,
+      email:              s.email,
+      team_code:          s.team_code || null,
+      rol:                s.rol       || null,
+      is_test:            s.is_test            ? 0 : 1,
+      excluded_from_team: s.excluded_from_team ? 1 : 0,
     }),
   });
   if (!r.ok) { alert('Actie mislukt.'); return; }

@@ -106,6 +106,7 @@ const selectTeamSubmissions = db.prepare(`
     WHERE  LOWER(TRIM(team_code)) = LOWER(TRIM(?))
     AND    deleted_at IS NULL
     AND    excluded_from_team = 0
+    AND    is_test = 0
   )
   SELECT id, naam, email, team_code, rol, created_at,
          raw_answers, score_driehoek, score_voorkeur,
