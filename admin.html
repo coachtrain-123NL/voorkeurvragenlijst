@@ -65,6 +65,19 @@
   .btn-restore { background: #d1fae5; color: #065f46; }
   .btn-restore:hover { background: #a7f3d0; }
 
+  /* Filter balk */
+  .filter-balk { display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    padding: 10px 14px; background: #fff; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 20px; }
+  #search { flex: 1; min-width: 180px; padding: 7px 10px; font-size: 13px;
+    border: 1px solid #ddd; border-radius: 5px; }
+  #search:focus { outline: none; border-color: #6366f1; }
+  .filter-toggle { font-size: 13px; color: #555; display: flex; align-items: center; gap: 5px;
+    cursor: pointer; white-space: nowrap; user-select: none; }
+
+  /* Test badge */
+  .badge-test { display: inline-block; font-size: 10px; font-weight: 700;
+    padding: 1px 6px; border-radius: 10px; background: #fef3c7; color: #92400e; margin-left: 4px; }
+
   /* Verwijderde inzendingen sectie */
   #del-toggle { cursor: pointer; user-select: none; }
   #del-toggle:hover { color: #555; }
@@ -108,6 +121,9 @@
     <input id="modal-team"  type="text"  class="modal-input" placeholder="">
     <label class="modal-label">Rol (optioneel)</label>
     <input id="modal-rol"   type="text"  class="modal-input" placeholder="">
+    <label class="filter-toggle" style="margin-top:12px">
+      <input type="checkbox" id="modal-istest"> Markeer als testinzending
+    </label>
     <p id="modal-fout"></p>
     <div class="modal-acties">
       <button onclick="slaOp()" class="btn btn-primary" style="flex:1">Opslaan</button>
@@ -121,6 +137,11 @@
   <button class="uitloggen" onclick="uitloggen()">Uitloggen</button>
   <h1>Dashboard</h1>
   <div class="meta-lijn" id="dash-meta"></div>
+  <div class="filter-balk">
+    <input id="search" type="search" placeholder="Zoek op naam, e-mail of team…" oninput="renderFiltered()">
+    <label class="filter-toggle"><input type="checkbox" id="toggle-test" onchange="renderFiltered()"> Toon testinzendingen</label>
+    <label class="filter-toggle"><input type="checkbox" id="toggle-del"  onchange="renderFiltered()"> Toon verwijderde</label>
+  </div>
   <div id="laden">Laden…</div>
   <div id="teams-sectie" style="display:none">
     <h2>Teams</h2>
@@ -134,7 +155,8 @@
 
 <script>
 // ── State ─────────────────────────────────────────────────────────────────────
-let TOKEN = sessionStorage.getItem('adminToken') || '';
+let TOKEN   = sessionStorage.getItem('adminToken') || '';
+let allSubs = [];  // volledige dataset; filtering in renderFiltered()
 
 function fmt(d) {
   return new Date(d).toLocaleDateString('nl-NL', { day:'numeric', month:'short', year:'numeric' });
@@ -160,13 +182,13 @@ async function login() {
   TOKEN = token;
   sessionStorage.setItem('adminToken', TOKEN);
   toonDash();
-  renderData(await r.json());
+  verwerkData(await r.json());
 }
 
 function uitloggen() {
-  TOKEN = ''; sessionStorage.removeItem('adminToken');
-  document.getElementById('token-input').value = '';
-  document.getElementById('login-fout').style.display = 'none';
+  TOKEN=''; allSubs=[]; sessionStorage.removeItem('adminToken');
+  document.getElementById('token-input').value='';
+  document.getElementById('login-fout').style.display='none';
   toonLogin();
 }
 function toonLogin() { document.getElementById('login').style.display='block'; document.getElementById('dash').style.display='none'; }
@@ -179,51 +201,80 @@ async function laadData() {
   try {
     const r = await fetch('/api/admin/submissions', { headers: { 'X-Admin-Token': TOKEN } });
     if (r.status === 403) { uitloggen(); return; }
-    renderData(await r.json());
+    verwerkData(await r.json());
   } catch (e) { document.getElementById('laden').textContent = 'Verbindingsfout.'; }
 }
 
+// ── Verwerken + filteren ──────────────────────────────────────────────────────
+function verwerkData(data) {
+  allSubs = data.submissions || [];
+  renderFiltered();
+}
+
+function renderFiltered() {
+  const query    = (document.getElementById('search').value || '').trim().toLowerCase();
+  const showTest = document.getElementById('toggle-test').checked;
+  const showDel  = document.getElementById('toggle-del').checked;
+
+  let subs = allSubs;
+  if (!showDel)  subs = subs.filter(s => !s.deleted_at);
+  if (!showTest) subs = subs.filter(s => !s.is_test);
+  if (query)     subs = subs.filter(s =>
+    (s.naam      ||'').toLowerCase().includes(query) ||
+    (s.email     ||'').toLowerCase().includes(query) ||
+    (s.team_code ||'').toLowerCase().includes(query)
+  );
+  if (showDel) {
+    document.getElementById('del-lijst').style.display = 'block';
+    document.getElementById('del-chevron').textContent = '▼';
+  }
+  renderData(subs);
+}
+
 // ── Render ────────────────────────────────────────────────────────────────────
-function renderData(data) {
-  const all     = data.submissions || [];
-  const actief  = all.filter(s => !s.deleted_at);
-  const deleted = all.filter(s =>  s.deleted_at);
+function renderData(subs) {
+  const actief  = subs.filter(s => !s.deleted_at);
+  const deleted = subs.filter(s =>  s.deleted_at);
 
   document.getElementById('laden').style.display = 'none';
   document.getElementById('teams-sectie').style.display = 'block';
+
+  const totActief = allSubs.filter(s => !s.deleted_at && !s.is_test).length;
+  const totTest   = allSubs.filter(s => !s.deleted_at &&  s.is_test).length;
+  const totDel    = allSubs.filter(s =>  s.deleted_at).length;
   document.getElementById('dash-meta').textContent =
-    `${actief.length} actieve inzendingen · ${deleted.length} verwijderd · bijgewerkt ${new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'})}`;
+    `${totActief} inzendingen · ${totTest} test · ${totDel} verwijderd · bijgewerkt ${new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'})}`;
   document.getElementById('del-count').textContent = deleted.length ? `(${deleted.length})` : '';
 
   // Groepeer actieve inzendingen
-  const teams = {}, ind = [];
+  const teams={}, ind=[];
   for (const s of actief) {
-    const code = (s.team_code || '').trim();
+    const code=(s.team_code||'').trim();
     if (!code) { ind.push(s); continue; }
-    const key = code.toLowerCase();
-    if (!teams[key]) teams[key] = { label: code, leden: [] };
+    const key=code.toLowerCase();
+    if (!teams[key]) teams[key]={label:code,leden:[]};
     teams[key].leden.push(s);
   }
 
-  // Actieknoppenrij per inzending
+  // Actieknoppen — is_test meegeven aan modal
   function acties(s) {
-    const d = JSON.stringify({ id:s.id, naam:s.naam, email:s.email, team:s.team_code||'', rol:s.rol||'' }).replace(/'/g,"\\'");
+    const d=JSON.stringify({id:s.id,naam:s.naam,email:s.email,team:s.team_code||'',rol:s.rol||'',is_test:!!s.is_test}).replace(/'/g,"\\'");
     return `<a href="/?rapport=${s.id}" target="_blank" class="btn btn-ghost">Rapport</a>
             <button onclick='openModal(${d})' class="btn btn-ghost">Bewerk</button>
             <button onclick="verwijder('${s.id}','${esc(s.naam)}')" class="btn btn-danger">Verwijder</button>`;
   }
+  function testBadge(s) { return s.is_test ? ' <span class="badge-test">test</span>' : ''; }
 
   // Teams
-  const teamLijst = document.getElementById('teams-lijst');
-  const teamKeys  = Object.keys(teams).sort();
-  teamLijst.innerHTML = teamKeys.length === 0
+  const teamKeys=Object.keys(teams).sort();
+  document.getElementById('teams-lijst').innerHTML = teamKeys.length===0
     ? '<p class="leeg">Geen teams gevonden.</p>'
     : teamKeys.map(key => {
-        const t = teams[key];
-        const rapportUrl = `team.html?code=${encodeURIComponent(t.label)}&token=${encodeURIComponent(TOKEN)}`;
-        const rijen = t.leden.map(l => `
+        const t=teams[key];
+        const url=`team.html?code=${encodeURIComponent(t.label)}&token=${encodeURIComponent(TOKEN)}`;
+        const rijen=t.leden.map(l=>`
           <tr>
-            <td>${esc(l.naam)}</td>
+            <td>${esc(l.naam)}${testBadge(l)}</td>
             <td style="color:#888">${esc(l.rol||'–')}</td>
             <td style="color:#888">${fmt(l.created_at)}</td>
             <td style="text-align:right;white-space:nowrap">${acties(l)}</td>
@@ -243,34 +294,32 @@ function renderData(data) {
                 <tbody>${rijen}</tbody>
               </table>
               <div class="team-footer">
-                <a href="${rapportUrl}" target="_blank" class="btn btn-team">Teamrapport openen →</a>
+                <a href="${url}" target="_blank" class="btn btn-team">Teamrapport openen →</a>
               </div>
             </div>
           </div>`;
       }).join('');
 
   // Individueel
-  const indLijst = document.getElementById('ind-lijst');
-  indLijst.innerHTML = ind.length === 0
+  document.getElementById('ind-lijst').innerHTML = ind.length===0
     ? '<p class="leeg">Geen inzendingen zonder team.</p>'
-    : ind.map(s => `
+    : ind.map(s=>`
         <div class="ind-rij">
           <div>
-            <div class="ind-naam">${esc(s.naam)}</div>
+            <div class="ind-naam">${esc(s.naam)}${testBadge(s)}</div>
             <div class="ind-sub">${esc(s.email)} &nbsp;·&nbsp; ${fmt(s.created_at)}</div>
           </div>
           <div class="ind-rechts">${acties(s)}</div>
         </div>`).join('');
 
   // Verwijderd
-  const delLijst = document.getElementById('del-lijst');
-  delLijst.innerHTML = deleted.length === 0
+  document.getElementById('del-lijst').innerHTML = deleted.length===0
     ? '<p class="leeg">Geen verwijderde inzendingen.</p>'
-    : deleted.map(s => `
+    : deleted.map(s=>`
         <div class="ind-rij">
           <div>
-            <div class="ind-naam">${esc(s.naam)}</div>
-            <div class="ind-sub">${s.team_code ? esc(s.team_code)+' &nbsp;·&nbsp; ' : ''}${fmt(s.deleted_at)} verwijderd</div>
+            <div class="ind-naam">${esc(s.naam)}${testBadge(s)}</div>
+            <div class="ind-sub">${s.team_code?esc(s.team_code)+' &nbsp;·&nbsp; ':''}${fmt(s.deleted_at)} verwijderd</div>
           </div>
           <div class="ind-rechts">
             <button onclick="herstel('${s.id}')" class="btn btn-restore">Herstel</button>
@@ -301,12 +350,13 @@ async function herstel(id) {
 }
 
 // ── Modal: bewerken ───────────────────────────────────────────────────────────
-function openModal({ id, naam, email, team, rol }) {
-  document.getElementById('modal-id').value    = id;
-  document.getElementById('modal-naam').value  = naam;
-  document.getElementById('modal-email').value = email;
-  document.getElementById('modal-team').value  = team;
-  document.getElementById('modal-rol').value   = rol;
+function openModal({ id, naam, email, team, rol, is_test }) {
+  document.getElementById('modal-id').value       = id;
+  document.getElementById('modal-naam').value     = naam;
+  document.getElementById('modal-email').value    = email;
+  document.getElementById('modal-team').value     = team;
+  document.getElementById('modal-rol').value      = rol;
+  document.getElementById('modal-istest').checked = !!is_test;
   document.getElementById('modal-fout').style.display = 'none';
   document.getElementById('modal-overlay').classList.add('actief');
   document.getElementById('modal-naam').focus();
@@ -319,17 +369,18 @@ async function slaOp() {
   const naam  = document.getElementById('modal-naam').value.trim();
   const email = document.getElementById('modal-email').value.trim();
   const team  = document.getElementById('modal-team').value.trim();
-  const rol   = document.getElementById('modal-rol').value.trim();
-  const fout  = document.getElementById('modal-fout');
+  const rol     = document.getElementById('modal-rol').value.trim();
+  const is_test = document.getElementById('modal-istest').checked ? 1 : 0;
+  const fout    = document.getElementById('modal-fout');
   fout.style.display = 'none';
 
-  if (!naam)  { fout.textContent='Naam is verplicht.';      fout.style.display='block'; return; }
-  if (!email) { fout.textContent='E-mail is verplicht.';    fout.style.display='block'; return; }
+  if (!naam)  { fout.textContent='Naam is verplicht.';   fout.style.display='block'; return; }
+  if (!email) { fout.textContent='E-mail is verplicht.'; fout.style.display='block'; return; }
 
   const r = await fetch(`/api/admin/submissions/${id}`, {
     method:  'PATCH',
     headers: { 'Content-Type':'application/json', 'X-Admin-Token': TOKEN },
-    body:    JSON.stringify({ naam, email, team_code: team||null, rol: rol||null }),
+    body:    JSON.stringify({ naam, email, team_code: team||null, rol: rol||null, is_test }),
   });
   const d = await r.json();
   if (!r.ok) { fout.textContent = d.error || 'Opslaan mislukt.'; fout.style.display='block'; return; }

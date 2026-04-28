@@ -20,8 +20,9 @@ const db = new DatabaseSync(path.join(dataDir, 'submissions.db'));
 // WAL-mode: betere prestaties bij meerdere gelijktijdige lezers
 db.exec('PRAGMA journal_mode = WAL');
 
-// Migratie: voeg deleted_at toe als die nog niet bestaat (veilig te herhalen)
-try { db.exec('ALTER TABLE submissions ADD COLUMN deleted_at TEXT'); } catch (_) {}
+// Migraties: veilig te herhalen, fout = kolom bestaat al
+try { db.exec('ALTER TABLE submissions ADD COLUMN deleted_at TEXT'); }          catch (_) {}
+try { db.exec('ALTER TABLE submissions ADD COLUMN is_test INTEGER DEFAULT 0'); } catch (_) {}
 
 // Schema – één tabel met alle benodigde kolommen
 db.exec(`
@@ -123,9 +124,9 @@ function getTeamSubmissions(teamCode) {
   return selectTeamSubmissions.all(teamCode);
 }
 
-// Prepared statement voor adminoverzicht — alle inzendingen inclusief verwijderde
+// Prepared statement voor adminoverzicht — alle inzendingen inclusief verwijderde + test
 const selectAllSubmissions = db.prepare(`
-  SELECT id, naam, email, team_code, rol, created_at, deleted_at
+  SELECT id, naam, email, team_code, rol, created_at, deleted_at, is_test
   FROM   submissions
   ORDER  BY created_at DESC
 `);
@@ -150,12 +151,12 @@ function restoreSubmission(id) {
   stmtRestore.run(id);
 }
 
-// Bewerk naam/email/team_code/rol — scores blijven ongewijzigd
+// Bewerk naam/email/team_code/rol/is_test — scores blijven ongewijzigd
 const stmtUpdate = db.prepare(
-  'UPDATE submissions SET naam=:naam, email=:email, team_code=:team_code, rol=:rol WHERE id=:id'
+  'UPDATE submissions SET naam=:naam, email=:email, team_code=:team_code, rol=:rol, is_test=:is_test WHERE id=:id'
 );
-function updateSubmission(id, { naam, email, team_code, rol }) {
-  stmtUpdate.run({ id, naam, email, team_code: team_code ?? null, rol: rol ?? null });
+function updateSubmission(id, { naam, email, team_code, rol, is_test }) {
+  stmtUpdate.run({ id, naam, email, team_code: team_code ?? null, rol: rol ?? null, is_test: is_test ? 1 : 0 });
 }
 
 module.exports = {
