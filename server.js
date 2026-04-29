@@ -20,6 +20,11 @@ const { sendRapportMail }  = require('./mailer');
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
+// Railway (en andere reverse-proxy platformen) sturen X-Forwarded-* headers.
+// Zonder trust proxy ziet Express het interne IP als client-IP en kan de
+// Secure-vlag op cookies problemen geven.
+app.set('trust proxy', 1);
+
 // ── Security headers ──────────────────────────────────────────────────────────
 // CSP uitgeschakeld: client-side rendering in HTML-bestanden; volgt in Fase 3.
 app.use(helmet({ contentSecurityPolicy: false }));
@@ -39,7 +44,7 @@ app.use(session({
   cookie: {
     httpOnly: true,
     secure:   process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: 'lax',
     maxAge:   8 * 60 * 60 * 1000,  // 8 uur
   },
 }));
@@ -67,7 +72,7 @@ const submitLimiter = rateLimit({
 // Controleer of de bezoeker een geldige admin-sessie heeft.
 // API-routes krijgen een 401-JSON; pagina-routes worden doorgestuurd naar /login.html.
 function requireAdmin(req, res, next) {
-  if (req.session && req.session.admin === true) return next();
+  if (req.session && req.session.isAdmin === true) return next();
   if (req.path.startsWith('/api/') || req.xhr) {
     return res.status(401).json({ ok: false, error: 'Niet ingelogd.' });
   }
@@ -80,17 +85,35 @@ app.post('/auth/login', authLimiter, (req, res) => {
   const { wachtwoord } = req.body ?? {};
   const adminToken = process.env.ADMIN_TOKEN;
 
+  console.log('[login] ADMIN_TOKEN aanwezig:', Boolean(adminToken));
+  console.log('[login] SESSION_SECRET aanwezig:', Boolean(process.env.SESSION_SECRET));
+
   if (!adminToken) {
     return res.status(503).json({ ok: false, error: 'Server niet geconfigureerd (ADMIN_TOKEN ontbreekt).' });
   }
-  if (typeof wachtwoord !== 'string' || wachtwoord !== adminToken) {
+  const ok = typeof wachtwoord === 'string' && wachtwoord === adminToken;
+  console.log('[login] wachtwoord correct:', ok);
+
+  if (!ok) {
     return res.status(401).json({ ok: false, error: 'Ongeldig wachtwoord.' });
   }
-  // Session fixation protection: regenereer sessie-id na succesvolle login
+
+  // Session fixation protection: nieuwe sessie-id na succesvolle login
   req.session.regenerate(err => {
-    if (err) return res.status(500).json({ ok: false, error: 'Sessie aanmaken mislukt.' });
-    req.session.admin = true;
-    return res.json({ ok: true });
+    if (err) {
+      console.error('[login] regenerate mislukt:', err.message);
+      return res.status(500).json({ ok: false, error: 'Sessie aanmaken mislukt.' });
+    }
+    req.session.isAdmin = true;
+    // Expliciet opslaan vóór redirect — voorkomt race condition op Railway
+    req.session.save(err2 => {
+      if (err2) {
+        console.error('[login] save mislukt:', err2.message);
+        return res.status(500).json({ ok: false, error: 'Sessie opslaan mislukt.' });
+      }
+      console.log('[login] sessie opgeslagen, isAdmin:', req.session.isAdmin);
+      return res.redirect('/admin.html');
+    });
   });
 });
 
@@ -338,7 +361,7 @@ app.post('/api/mail/:id', async (req, res) => {
 //   3+ respondenten → 200 met volledige analyse
 
 app.get('/api/team/:team_code', (req, res) => {
-  const hasSession = req.session && req.session.admin === true;
+  const hasSession = req.session && req.session.isAdmin === true;
   const adminToken = process.env.ADMIN_TOKEN;
   const hasToken   = adminToken && req.headers['x-admin-token'] === adminToken;
 

@@ -108,12 +108,13 @@ async function login() {
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ wachtwoord: ww }),
     });
-    const d = await r.json().catch(() => ({}));
-
-    if (r.ok && d.ok) {
+    // Bij succes redirect de server naar /admin.html (200 OK met HTML).
+    // Bij mislukking stuurt de server een 4xx JSON terug.
+    if (r.ok) {
       window.location.href = '/admin.html';
       return;
     }
+    const d = await r.json().catch(() => ({}));
     fout.textContent   = d.error || 'Inloggen mislukt.';
     fout.style.display = 'block';
   } catch {
