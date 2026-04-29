@@ -1,6 +1,51 @@
 'use strict';
 
-require('dotenv').config();
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
+
+// ── Startup: valideer kritieke secrets ────────────────────────────────────────
+// In productie: fatale fout + process.exit(1) als de config niet klopt.
+// Lokaal: waarschuwing, server start wel (zodat ontwikkelen zonder sterk wachtwoord kan).
+(function validateSecrets() {
+  const isProd = process.env.NODE_ENV === 'production';
+  const WEAK   = new Set(['admin', 'password', 'test', 'test-token-123', 'secret', '']);
+  const errors = [];
+
+  const token  = process.env.ADMIN_TOKEN  || '';
+  const secret = process.env.SESSION_SECRET || '';
+
+  console.log('[startup] ADMIN_TOKEN aanwezig:',    Boolean(token));
+  console.log('[startup] SESSION_SECRET aanwezig:',  Boolean(secret));
+
+  if (!token) {
+    errors.push('ADMIN_TOKEN ontbreekt.');
+  } else if (token.length < 32) {
+    errors.push(`ADMIN_TOKEN te kort — ${token.length} tekens, minimaal 32 vereist.`);
+  } else if (WEAK.has(token.toLowerCase())) {
+    errors.push('ADMIN_TOKEN is een bekende zwakke waarde.');
+  }
+
+  if (!secret) {
+    errors.push('SESSION_SECRET ontbreekt.');
+  } else if (secret.length < 32) {
+    errors.push(`SESSION_SECRET te kort — ${secret.length} tekens, minimaal 32 vereist.`);
+  }
+
+  if (errors.length === 0) {
+    console.log('[startup] secret validation ok');
+    return;
+  }
+
+  if (isProd) {
+    console.error('[startup] FATALE CONFIGURATIEFOUT — server weigert te starten:');
+    errors.forEach(e => console.error('  •', e));
+    process.exit(1);
+  } else {
+    console.warn('[startup] Configuratiewaarschuwing (dev — server start wel):');
+    errors.forEach(e => console.warn('  •', e));
+  }
+}());
 
 const express        = require('express');
 const path           = require('path');
@@ -33,9 +78,6 @@ app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json({ limit: '1mb' }));
 
 // ── Session ───────────────────────────────────────────────────────────────────
-if (!process.env.SESSION_SECRET) {
-  console.warn('[warn] SESSION_SECRET niet ingesteld — stel een willekeurige string in via .env');
-}
 app.use(session({
   secret:            process.env.SESSION_SECRET || 'dev-only-insecure-fallback',
   resave:            false,
@@ -84,9 +126,6 @@ function requireAdmin(req, res, next) {
 app.post('/auth/login', authLimiter, (req, res) => {
   const { wachtwoord } = req.body ?? {};
   const adminToken = process.env.ADMIN_TOKEN;
-
-  console.log('[login] ADMIN_TOKEN aanwezig:', Boolean(adminToken));
-  console.log('[login] SESSION_SECRET aanwezig:', Boolean(process.env.SESSION_SECRET));
 
   if (!adminToken) {
     return res.status(503).json({ ok: false, error: 'Server niet geconfigureerd (ADMIN_TOKEN ontbreekt).' });
