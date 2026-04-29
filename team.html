@@ -182,6 +182,63 @@
   }
   .afsluiting-datum { font-size: 11px; color: #ddd; }
 
+  /* ── PDF-knop ────────────────────────────────────────────────────────────── */
+  .pdf-bar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(242,243,245,.96); backdrop-filter: blur(4px);
+    padding: 10px 0; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .pdf-knop {
+    background: #1e3a8a; color: #fff; border: none; border-radius: 6px;
+    padding: 8px 20px; font-size: 13px; font-weight: 700;
+    cursor: pointer; letter-spacing: .2px; white-space: nowrap; flex-shrink: 0;
+  }
+  .pdf-knop:hover { background: #1e40af; }
+  .pdf-hint { font-size: 11px; color: #aaa; line-height: 1.5; }
+
+  /* ── Teamrollen ──────────────────────────────────────────────────────────── */
+  .rol-grid {
+    display: grid; grid-template-columns: repeat(4,1fr);
+    gap: 10px; margin-bottom: 12px;
+  }
+  .rol-kaart {
+    background: #fff; border-radius: 8px; padding: 14px 12px;
+    text-align: center; border: 2px solid #e8e8e8;
+  }
+  .rol-kaart.rol-zwak         { opacity: .55; }
+  .rol-kaart.rol-rood-sterk   { border-color: #dc2626; }
+  .rol-kaart.rol-blauw-sterk  { border-color: #1d4ed8; }
+  .rol-kaart.rol-groen-sterk  { border-color: #16a34a; }
+  .rol-kaart.rol-geel-sterk   { border-color: #ca8a04; }
+  .rol-icon  { font-size: 22px; margin-bottom: 4px; }
+  .rol-naam  { font-size: 13px; font-weight: 700; color: #111; margin-bottom: 3px; }
+  .rol-niveau {
+    font-size: 10px; text-transform: uppercase; letter-spacing: .6px;
+    font-weight: 700; margin-bottom: 8px;
+  }
+  .rol-niveau-sterk    { color: #16a34a; }
+  .rol-niveau-aanwezig { color: #999; }
+  .rol-niveau-zwak     { color: #ccc; }
+  .rol-tekst    { font-size: 11px; color: #555; line-height: 1.55; text-align: left; }
+  /* Contextueel extra blok per kaart (dominant / ontbreekt) */
+  .rol-warning {
+    font-size: 10px; line-height: 1.45; margin-top: 7px;
+    padding-top: 7px; border-top: 1px solid rgba(0,0,0,.06); color: #888;
+  }
+  .rol-warning-dominant { color: #b45309; }   /* amber — te dominant */
+  .rol-warning-missing  { color: #6b7280; }   /* grijs  — ontbreekt  */
+  /* Rolverdeling-inzicht blok onder de grid */
+  .rol-inzicht {
+    background: #fff; border-radius: 8px; padding: 16px 18px;
+    border: 1px solid #e5e7eb; margin-top: 2px;
+  }
+  .rol-inzicht-lbl {
+    font-size: 10px; text-transform: uppercase; letter-spacing: .7px;
+    color: #bbb; font-weight: 700; margin-bottom: 8px;
+  }
+  .rol-inzicht-tekst { font-size: 13px; color: #333; line-height: 1.7; }
+
   /* ── Fout ────────────────────────────────────────────────────────────────── */
   #fout { color: #b91c1c; padding: 20px 0; }
 
@@ -257,6 +314,19 @@
 
     /* Orphan/widow control */
     p, li { orphans: 3; widows: 3; }
+
+    /* PDF-knop: nooit printen */
+    .pdf-bar { display: none !important; }
+
+    /* Teamrollen: niet breken, kleuren bewaren */
+    .rol-grid, .rol-kaart, .rol-inzicht { page-break-inside: avoid; }
+    .rol-kaart {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* SVG expliciet bewaren */
+    svg { page-break-inside: avoid; }
   }
 </style>
 </head>
@@ -652,9 +722,179 @@ function buildVraagt(a) {
   ];
 }
 
+// ── Teamrollen ────────────────────────────────────────────────────────────────
+
+// Wat de rol bijdraagt als hij goed functioneert
+function roleContributionText(kleur) {
+  return {
+    rood:  'Zet dingen in beweging. Neemt besluiten als anderen aarzelen en houdt de energie erin. De kartrekker zorgt dat goede intenties ook echt iets worden.',
+    blauw: 'Bewaakt kwaliteit en afspraken. Stelt de juiste vragen voordat er wordt gehandeld — en zorgt dat wat werkt ook blijft werken. De analist houdt het team scherp.',
+    groen: 'Houdt iedereen aan boord. Zorgt voor draagvlak en lost spanningen op voordat ze escaleren. De verbinder is de lijm die het team bij elkaar houdt onder druk.',
+    geel:  'Doorziet patronen en brengt nieuwe invalshoeken. Voorkomt dat het team vastloopt in de eigen aanpak. De vernieuwer ziet kansen die anderen over het hoofd zien.',
+  }[kleur] || '';
+}
+
+// Wat er misgaat als de rol te dominant is
+function roleTooDominantText(kleur) {
+  return {
+    rood:  'Overstemt anderen. Besluiten gaan te snel en nuance of draagvlak valt weg.',
+    blauw: 'Vertraagt besluitvorming. Te veel analyse en controle houden actie tegen.',
+    groen: 'Spanningen worden vermeden in plaats van opgelost. Moeilijke keuzes schuiven door.',
+    geel:  'Veel ideeën, weinig landing. Het team verkent constant maar levert niet.',
+  }[kleur] || '';
+}
+
+// Wat er misgaat als de rol ontbreekt of zwak is
+function roleMissingText(kleur) {
+  return {
+    rood:  'Besluiten blijven hangen. Er wordt gepraat maar niet gehandeld.',
+    blauw: 'Fouten worden te laat gezien. Afspraken worden gemaakt maar niet nagekomen.',
+    groen: 'Spanningen sluimeren. Het team presteert goed in rustig water — niet als er friction ontstaat.',
+    geel:  'Het team blijft in bekende oplossingen. Aanpassen aan nieuwe situaties kost onevenredig veel moeite.',
+  }[kleur] || '';
+}
+
+// "Wat betekent deze rolverdeling voor dit team?" — specifiek per combinatie
+function renderRoleDistributionInsight(rollen) {
+  const sterk = rollen.filter(r => r.niveau === 'sterk').map(r => r.kleur);
+  const zwak  = rollen.filter(r => r.niveau === 'zwak').map(r => r.kleur);
+
+  // Meest diagnostische combinaties eerst
+  if (sterk.includes('rood') && zwak.includes('blauw'))
+    return 'Er zit drive en daadkracht — maar de kwaliteitsrem ontbreekt. Besluiten gaan snel; of ze slim zijn, wordt pas later duidelijk. Bouw checkpoints in voordat er wordt gehandeld.';
+  if (sterk.includes('rood') && zwak.includes('groen'))
+    return 'Veel vaart en daadkracht, weinig draagvlak. Dit team levert resultaten — maar laat mensen onderweg achter als dat niet bewust wordt bewaakt.';
+  if (sterk.includes('groen') && zwak.includes('rood'))
+    return 'Verbindend en prettig om in te werken. Maar zonder kartrekker slippen besluiten weg. De sfeer is goed — de productiviteit loopt gevaar als niemand de knoop doorhakt.';
+  if (sterk.includes('groen') && zwak.includes('geel'))
+    return 'Warm team met sterke relaties, maar weinig vernieuwingsdrang. Er is verbinding genoeg om moeilijke gesprekken aan te gaan — gebruik die basis om ook kritisch naar de eigen aanpak te kijken.';
+  if (sterk.includes('blauw') && zwak.includes('geel'))
+    return 'Nauwkeurig en betrouwbaar — maar weinig vernieuwingsdrang. Het team borgt wat werkt, maar past traag aan. Nieuwe situaties kosten onevenredig veel energie.';
+  if (sterk.includes('blauw') && zwak.includes('rood'))
+    return 'Zorgvuldig en precies — maar doorpakken is het zwakste punt. Er wordt goed gedacht en gepland; de stap naar handelen vraagt structureel meer moeite dan het zou moeten.';
+  if (sterk.includes('geel') && zwak.includes('rood'))
+    return 'Sterk in denken, zwak in doen. Er komen goede ideeën — maar ze landen zelden. Het team mist iemand die de versnelling ingooit en zegt: dit is de aanpak, we doen het zo.';
+  if (sterk.includes('geel') && zwak.includes('blauw'))
+    return 'Vernieuwend en creatief — maar weinig aandacht voor kwaliteit en borging. Ideeën starten snel en worden zelden goed afgemaakt. Dat frustreert uiteindelijk ook de vernieuwers zelf.';
+
+  // Patroon-fallbacks
+  if (zwak.length === 0 && sterk.length >= 2)
+    return 'Alle primaire rollen zijn aanwezig — dat geeft breedte. Risico: zonder duidelijke prioriteit trekt iedereen in een eigen richting. Zorg dat de dominante rollen de zwakkere niet structureel overstemmen.';
+  if (sterk.length === 0)
+    return 'Geen enkele rol springt er sterk uit. Dat geeft evenwicht, maar ook weinig trekkers. In rustige periodes werkt dat prima; bij druk of verandering mist het team een duidelijk aanspreekpunt.';
+  if (zwak.length >= 2) {
+    const namen = zwak.map(k => rollen.find(r => r.kleur === k).naam.toLowerCase()).join(' en ');
+    return `De rollen van ${namen} zijn weinig zichtbaar. Bespreek bewust hoe het team dit opvangt — intern afspreken wie deze functies vervult, of iemand van buiten inschakelen.`;
+  }
+  // Enkelvoudige fallback op top/bottom score
+  const top  = [...rollen].sort((a,b) => b.score - a.score)[0];
+  const laag = [...rollen].sort((a,b) => a.score - b.score)[0];
+  return `De meeste energie gaat naar de ${top.naam.toLowerCase()}srol — dat is de as waaromheen dit team draait. De ${laag.naam.toLowerCase()}srol vraagt bewuste aandacht: die komt niet vanzelf op de agenda, maar is wel bepalend voor de balans.`;
+}
+
+// Samenhangende teamdiagnose op basis van rolverdeling — oorzaak → effect → kernspanning
+function renderRoleDistributionSummary(a) {
+  const vk = a.spiral.voorkeur;
+  const s  = { rood: vk.rood.mean, blauw: vk.blauw.mean, groen: vk.groen.mean, geel: vk.geel.mean };
+  const mx = Math.max(...Object.values(s), 1);
+  const niv = Object.fromEntries(Object.entries(s).map(([k,v]) => {
+    const p = v / mx;
+    return [k, p >= .70 ? 'sterk' : p >= .40 ? 'aanwezig' : 'zwak'];
+  }));
+  const is = (k, n) => niv[k] === n;
+
+  if (is('rood','sterk') && is('groen','zwak'))
+    return 'Tempo en daadkracht zijn de sterke kant — besluiten worden genomen en vaart is hoog. Draagvlak groeit pas als het al te laat is om bij te sturen, en mensen die in een ander tempo werken worden meegesleurd in plaats van meegenomen. Onder druk versnelt het patroon. Kernspanning: resultaatgerichtheid en mensgerichtheid lopen structureel uiteen.';
+  if (is('groen','sterk') && is('rood','zwak'))
+    return 'Sterke onderlinge relaties en oog voor elkaar. Maar besluiten nemen zonder volledige consensus lukt moeilijk — en dat kost tijd die er niet altijd is. De goede sfeer maakt het extra lastig om de knoop door te hakken; niemand wil de harmonie doorbreken. Kernspanning: verbinding is sterk, besluitkracht niet.';
+  if (is('blauw','sterk') && is('geel','zwak'))
+    return 'Betrouwbaar en precies — het team levert wat het belooft en houdt de kwaliteit hoog. Maar aanpassen aan nieuwe situaties kost meer energie dan nodig. Bewezen werkwijzen worden lang vastgehouden, ook als de context vraagt om een andere aanpak. Kernspanning: kwaliteit en wendbaarheid staan structureel onder druk.';
+  if (is('geel','sterk') && is('blauw','zwak'))
+    return 'Vernieuwend en conceptueel sterk — er komen goede ideeën en het team overziet het grote plaatje. Maar borging ontbreekt: meer start dan afrondt. Onder druk volgt een nieuw idee op het probleem, in plaats van het aanpakken van wat al liep. Kernspanning: creativiteit en borging zijn uit balans.';
+  if (is('rood','sterk') && is('blauw','zwak'))
+    return 'Snel en daadkrachtig — dit team wacht niet en pakt aan. Maar het analytisch tegenwicht ontbreekt: fouten worden pas later gezien en afspraken worden vaker geschonden dan nodig. Onder druk wordt tempo het antwoord op alles, ook als langzamer het betere antwoord zou zijn. Kernspanning: snelheid en kwaliteit trekken in tegengestelde richting.';
+  if (is('groen','sterk') && is('geel','zwak'))
+    return 'Verbindend en op de relatie gericht — de samenwerking is een bewust belang en schept vertrouwen. Maar een kritische blik op de eigen aanpak en echt nieuwe invalshoeken komen minder vanzelf. Onder druk wordt de neiging om het aanvaardbaar te houden sterker, in plaats van zwakker. Kernspanning: harmonie gaat voor vernieuwing.';
+  if (is('blauw','sterk') && is('rood','zwak'))
+    return 'Zorgvuldig en consistent — de kwaliteit klopt en afspraken worden nagekomen. Maar doorpakken en knopen doorhakken kosten structureel te veel energie. Er wordt goed gedacht en gepland; de executie blijft achter. Kernspanning: precisie en actie staan op gespannen voet.';
+  if (is('geel','sterk') && is('rood','zwak'))
+    return 'Breed denkend en vernieuwingsgericht — het team overziet het grote plaatje en doorziet patronen. Maar vertalen naar concrete actie is het zwakste punt: ideeën starten goed en ronden slecht af. Kernspanning: denken en doen zijn niet in balans.';
+
+  // Fallback op dominante/zwakste kleur
+  const topK = Object.entries(s).sort(([,a],[,b]) => b - a)[0][0];
+  const lowK = Object.entries(s).sort(([,a],[,b]) => a - b)[0][0];
+  const topN = { rood:'daadkracht', blauw:'analytische kwaliteit', groen:'verbindend vermogen', geel:'vernieuwingsdrang' }[topK];
+  const lowN = { rood:'kartrekker', blauw:'analist', groen:'verbinder', geel:'vernieuwer' }[lowK];
+  return `${cap(topN)} is de dominante energie — dat kleurt hoe dit team communiceert, besluiten neemt en samenwerkt. De ${lowN}srol is de minst vanzelfsprekende bijdrage en komt niet automatisch op de agenda. Onder druk versterkt de dominante tendens zich, terwijl precies dan tegengewicht nodig is. Kernspanning: de teamdynamiek versterkt de dominante neiging op het moment dat die tegenwicht nodig heeft.`;
+}
+
+// Hoofdfunctie — aangeroepen vanuit render()
+function buildTeamRollen(a) {
+  const vk = a.spiral.voorkeur;
+
+  const ROLLEN = [
+    { kleur:'rood',  naam:'Kartrekker', emoji:'🔴', score: vk.rood.mean  },
+    { kleur:'blauw', naam:'Analist',    emoji:'🔵', score: vk.blauw.mean },
+    { kleur:'groen', naam:'Verbinder',  emoji:'🟢', score: vk.groen.mean },
+    { kleur:'geel',  naam:'Vernieuwer', emoji:'🟡', score: vk.geel.mean  },
+  ];
+
+  // Relatieve drempels t.o.v. hoogste van de vier
+  const maxScore = Math.max(...ROLLEN.map(r => r.score), 1);
+  ROLLEN.forEach(r => {
+    const pct = r.score / maxScore;
+    r.niveau = pct >= 0.70 ? 'sterk' : pct >= 0.40 ? 'aanwezig' : 'zwak';
+  });
+
+  const niveauLbl = { sterk:'Sterk aanwezig', aanwezig:'Aanwezig', zwak:'Weinig zichtbaar' };
+
+  const kaarten = ROLLEN.map(r => {
+    const klassen = [
+      'rol-kaart',
+      r.niveau === 'zwak'  ? 'rol-zwak'             : '',
+      r.niveau === 'sterk' ? `rol-${r.kleur}-sterk` : '',
+    ].filter(Boolean).join(' ');
+
+    // Contextgevoelig extra blok — alleen bij sterk of zwak
+    const extra = r.niveau === 'sterk'
+      ? `<div class="rol-warning rol-warning-dominant">⚡ Te dominant: ${roleTooDominantText(r.kleur)}</div>`
+      : r.niveau === 'zwak'
+        ? `<div class="rol-warning rol-warning-missing">↳ Ontbreekt: ${roleMissingText(r.kleur)}</div>`
+        : '';
+
+    return `
+      <div class="${klassen}">
+        <div class="rol-icon">${r.emoji}</div>
+        <div class="rol-naam">${r.naam}</div>
+        <div class="rol-niveau rol-niveau-${r.niveau}">${niveauLbl[r.niveau]}</div>
+        <div class="rol-tekst">${roleContributionText(r.kleur)}</div>
+        ${extra}
+      </div>`;
+  }).join('');
+
+  return `
+    <h2>Rollen in het team</h2>
+    <div class="rol-grid">${kaarten}</div>
+    <div class="rol-inzicht">
+      <div class="rol-inzicht-lbl">Rolcombinatie</div>
+      <div class="rol-inzicht-tekst">${renderRoleDistributionInsight(ROLLEN)}</div>
+    </div>
+    <div class="rol-inzicht">
+      <div class="rol-inzicht-lbl">Teamdiagnose</div>
+      <div class="rol-inzicht-tekst">${renderRoleDistributionSummary(a)}</div>
+    </div>`;
+}
+
 // ── Render ────────────────────────────────────────────────────────────────────
 function render(a) {
   const m = a.meta;
+
+  // ── 0. PDF-downloadknop (verborgen in print) ──────────────────────────────
+  const pdfBar = `
+    <div class="pdf-bar">
+      <button class="pdf-knop" onclick="window.print()">⬇ Download als PDF</button>
+      <span class="pdf-hint">Kies "Opslaan als PDF" in het printvenster · A4 staand · marges normaal</span>
+    </div>`;
 
   // Datums
   const datumRange = m.eerste_inzending === m.laatste_inzending
@@ -712,6 +952,9 @@ function render(a) {
       <thead><tr><th>#</th><th>Naam</th>${heeftRol?'<th>Rol</th>':''}<th>Datum</th></tr></thead>
       <tbody>${ledenRijen}</tbody>
     </table>`;
+
+  // 4b. Teamrollen — afgeleid uit voorkeurdata, na teamleden
+  const teamRollen = buildTeamRollen(a);
 
   // 5. Driehoek SVG
   const Sx=210,Sy=115, Tx=52,Ty=300, Cx=368,Cy=300;
@@ -860,10 +1103,11 @@ function render(a) {
 
   // ── Samenstellen ───────────────────────────────────────────────────────────
   return [
+    pdfBar,                   // sticky bovenaan, verdwijnt in print
     header,
     leesroute,
     samenvatting,
-    `<div class="sectie-profiel">${[ledenTabel, driehoek, spiral, patronen].join('\n')}</div>`,
+    `<div class="sectie-profiel">${[ledenTabel, teamRollen, driehoek, spiral, patronen].join('\n')}</div>`,
     `<div class="sectie-analyse">${[inzichten, sterktes, risicos, dynamiek].join('\n')}</div>`,
     `<div class="sectie-richting">${[conclusie, ontwikkeling, vraagt].join('\n')}</div>`,
     afsluiting,
