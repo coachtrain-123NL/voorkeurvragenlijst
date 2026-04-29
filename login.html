@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inloggen — De Coachtrain</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .login-box {
+    background: #fff;
+    border-radius: 10px;
+    padding: 36px 32px;
+    width: 100%;
+    max-width: 360px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.08);
+    margin: 20px;
+  }
+  .login-logo {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: #bbb;
+    margin-bottom: 18px;
+  }
+  h1 { font-size: 20px; margin: 0 0 22px; color: #111; }
+  label { display: block; font-size: 12px; color: #666; margin-bottom: 4px; }
+  input[type="password"] {
+    display: block;
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    margin-bottom: 14px;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  input[type="password"]:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px #eef2ff;
+  }
+  button {
+    width: 100%;
+    padding: 11px;
+    font-size: 14px;
+    font-weight: 700;
+    background: #111;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  button:hover:not(:disabled) { background: #333; }
+  button:disabled { background: #999; cursor: not-allowed; }
+  #fout {
+    color: #b91c1c;
+    font-size: 13px;
+    margin-top: 10px;
+    display: none;
+  }
+</style>
+</head>
+<body>
+<div class="login-box">
+  <div class="login-logo">De Coachtrain</div>
+  <h1>Beheer</h1>
+  <label for="wachtwoord">Wachtwoord</label>
+  <input id="wachtwoord" type="password" autocomplete="current-password" autofocus>
+  <button id="btn" onclick="login()">Inloggen</button>
+  <p id="fout"></p>
+</div>
+
+<script>
+document.getElementById('wachtwoord').addEventListener('keydown', e => {
+  if (e.key === 'Enter') login();
+});
+
+async function login() {
+  const ww   = document.getElementById('wachtwoord').value;
+  const fout = document.getElementById('fout');
+  const btn  = document.getElementById('btn');
+
+  fout.style.display = 'none';
+
+  if (!ww.trim()) {
+    fout.textContent   = 'Voer een wachtwoord in.';
+    fout.style.display = 'block';
+    return;
+  }
+
+  btn.disabled    = true;
+  btn.textContent = 'Even geduld\u2026';
+
+  try {
+    const r = await fetch('/auth/login', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ wachtwoord: ww }),
+    });
+    const d = await r.json().catch(() => ({}));
+
+    if (r.ok && d.ok) {
+      window.location.href = '/admin.html';
+      return;
+    }
+    fout.textContent   = d.error || 'Inloggen mislukt.';
+    fout.style.display = 'block';
+  } catch {
+    fout.textContent   = 'Verbindingsfout. Probeer het opnieuw.';
+    fout.style.display = 'block';
+  }
+
+  btn.disabled    = false;
+  btn.textContent = 'Inloggen';
+}
+</script>
+</body>
+</html>

@@ -7,16 +7,8 @@
   *, *::before, *::after { box-sizing: border-box; }
   body { font-family: Arial, sans-serif; max-width: 860px; margin: 40px auto; padding: 0 20px; color: #111; background: #f5f5f5; }
 
-  /* Login */
-  #login { max-width: 360px; margin: 80px auto; background: #fff; border-radius: 10px; padding: 32px; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
-  #login h1 { font-size: 20px; margin: 0 0 20px; }
-  #login input { width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 10px; }
-  #login button { width: 100%; padding: 10px; font-size: 14px; font-weight: 700; background: #111; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
-  #login button:hover { background: #333; }
-  #login-fout { color: #b91c1c; font-size: 13px; margin-top: 8px; display: none; }
-
   /* Dashboard */
-  #dash { display: none; }
+  #dash { display: block; }
   h1 { font-size: 22px; margin: 0 0 4px; }
   .meta-lijn { font-size: 13px; color: #888; margin-bottom: 28px; }
   h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .6px; color: #888; border-bottom: 1px solid #ddd; padding-bottom: 6px; margin: 28px 0 12px; }
@@ -128,14 +120,6 @@
 </head>
 <body>
 
-<!-- Login -->
-<div id="login">
-  <h1>Beheer</h1>
-  <input id="token-input" type="password" placeholder="Admin token" autocomplete="current-password">
-  <button onclick="login()">Inloggen</button>
-  <p id="login-fout"></p>
-</div>
-
 <!-- Modal: inzending bewerken -->
 <div id="modal-overlay">
   <div id="modal-box">
@@ -184,7 +168,6 @@
 
 <script>
 // ── State ─────────────────────────────────────────────────────────────────────
-let TOKEN   = sessionStorage.getItem('adminToken') || '';
 let allSubs = [];  // volledige dataset; filtering in renderFiltered()
 
 function fmt(d) {
@@ -195,41 +178,21 @@ function esc(s) {
 }
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
-if (TOKEN) { toonDash(); laadData(); } else { toonLogin(); }
+laadData();
 
-// ── Login / Uitloggen ─────────────────────────────────────────────────────────
-document.getElementById('token-input').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
-
-async function login() {
-  const token = document.getElementById('token-input').value.trim();
-  const fout  = document.getElementById('login-fout');
-  fout.style.display = 'none';
-  if (!token) { fout.textContent = 'Voer een token in.'; fout.style.display = 'block'; return; }
-  const r = await fetch('/api/admin/submissions', { headers: { 'X-Admin-Token': token } });
-  if (r.status === 403) { fout.textContent = 'Ongeldig token.'; fout.style.display = 'block'; return; }
-  if (!r.ok)            { fout.textContent = 'Serverfout.';     fout.style.display = 'block'; return; }
-  TOKEN = token;
-  sessionStorage.setItem('adminToken', TOKEN);
-  toonDash();
-  verwerkData(await r.json());
+// ── Uitloggen ─────────────────────────────────────────────────────────────────
+async function uitloggen() {
+  await fetch('/auth/logout', { method: 'POST' }).catch(() => {});
+  window.location.href = '/login.html';
 }
-
-function uitloggen() {
-  TOKEN=''; allSubs=[]; sessionStorage.removeItem('adminToken');
-  document.getElementById('token-input').value='';
-  document.getElementById('login-fout').style.display='none';
-  toonLogin();
-}
-function toonLogin() { document.getElementById('login').style.display='block'; document.getElementById('dash').style.display='none'; }
-function toonDash()  { document.getElementById('login').style.display='none';  document.getElementById('dash').style.display='block'; }
 
 // ── Data ophalen ──────────────────────────────────────────────────────────────
 async function laadData() {
   document.getElementById('laden').textContent = 'Laden…';
   document.getElementById('teams-sectie').style.display = 'none';
   try {
-    const r = await fetch('/api/admin/submissions', { headers: { 'X-Admin-Token': TOKEN } });
-    if (r.status === 403) { uitloggen(); return; }
+    const r = await fetch('/api/admin/submissions');
+    if (r.status === 401) { window.location.href = '/login.html'; return; }
     verwerkData(await r.json());
   } catch (e) { document.getElementById('laden').textContent = 'Verbindingsfout.'; }
 }
@@ -323,7 +286,7 @@ function renderData(subs) {
     ? '<p class="leeg">Geen teams gevonden.</p>'
     : teamKeys.map(key => {
         const t   = teams[key];
-        const url = `team.html?code=${encodeURIComponent(t.label)}&token=${encodeURIComponent(TOKEN)}`;
+        const url = `team.html?code=${encodeURIComponent(t.label)}`;
 
         // Statistieken per team
         const nMeetelt = t.leden.filter(l => !l.is_test && !l.excluded_from_team).length;
@@ -416,13 +379,13 @@ function toggleDel() {
 // ── Acties ────────────────────────────────────────────────────────────────────
 async function verwijder(id, naam) {
   if (!confirm(`Weet je zeker dat je "${naam}" wilt verwijderen?\n\nDe inzending blijft herstelbaar.`)) return;
-  const r = await fetch(`/api/admin/submissions/${id}`, { method:'DELETE', headers:{'X-Admin-Token':TOKEN} });
+  const r = await fetch(`/api/admin/submissions/${id}`, { method:'DELETE' });
   if (!r.ok) { alert('Verwijderen mislukt.'); return; }
   laadData();
 }
 
 async function herstel(id) {
-  const r = await fetch(`/api/admin/submissions/${id}/restore`, { method:'POST', headers:{'X-Admin-Token':TOKEN} });
+  const r = await fetch(`/api/admin/submissions/${id}/restore`, { method:'POST' });
   if (!r.ok) { alert('Herstellen mislukt.'); return; }
   laadData();
 }
@@ -432,7 +395,7 @@ async function toggleUitsluiting(id) {
   if (!s) return;
   const r = await fetch(`/api/admin/submissions/${id}`, {
     method:  'PATCH',
-    headers: { 'Content-Type':'application/json', 'X-Admin-Token': TOKEN },
+    headers: { 'Content-Type':'application/json' },
     body:    JSON.stringify({
       naam:               s.naam,
       email:              s.email,
@@ -451,7 +414,7 @@ async function toggleTest(id) {
   if (!s) return;
   const r = await fetch(`/api/admin/submissions/${id}`, {
     method:  'PATCH',
-    headers: { 'Content-Type':'application/json', 'X-Admin-Token': TOKEN },
+    headers: { 'Content-Type':'application/json' },
     body:    JSON.stringify({
       naam:               s.naam,
       email:              s.email,
@@ -495,7 +458,7 @@ async function slaOp() {
 
   const r = await fetch(`/api/admin/submissions/${id}`, {
     method:  'PATCH',
-    headers: { 'Content-Type':'application/json', 'X-Admin-Token': TOKEN },
+    headers: { 'Content-Type':'application/json' },
     body:    JSON.stringify({ naam, email, team_code: team||null, rol: rol||null, is_test }),
   });
   const d = await r.json();
