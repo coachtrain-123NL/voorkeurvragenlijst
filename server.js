@@ -54,7 +54,7 @@ const session        = require('express-session');
 const { rateLimit }  = require('express-rate-limit');
 const { v4: uuidv4 } = require('uuid');
 const {
-  createSubmission, getSubmission, getTeamSubmissions,
+  createSubmission, getSubmission, getSubmissionByToken, getTeamSubmissions,
   getAllSubmissions, softDeleteSubmission, restoreSubmission, updateSubmission,
   purgeSubmission, softDeleteTeam, restoreTeam, purgeTeam, purgeExpired,
 } = require('./database');
@@ -223,12 +223,14 @@ app.post('/api/submit', submitLimiter, (req, res) => {
     return res.status(400).json({ ok: false, errors: answerErrors });
   }
 
-  const scores = calcScores(raw_answers);
-  const id     = uuidv4();
+  const scores       = calcScores(raw_answers);
+  const id           = uuidv4();   // interne sleutel, nooit publiek
+  const viewer_token = uuidv4();   // publiek rapport-token, losstaan van id
 
   try {
     createSubmission({
       id,
+      viewer_token,
       naam:       naam.trim(),
       email:      email.trim().toLowerCase(),
       team_code:  typeof team_code === 'string' && team_code.trim() ? team_code.trim() : null,
@@ -241,7 +243,9 @@ app.post('/api/submit', submitLimiter, (req, res) => {
       score_kw:       scores.kw,
       score_iz:       scores.iz,
     });
-    return res.status(201).json({ ok: true, id });
+    // Geef de viewer_token terug als publiek id — de interne DB-sleutel
+    // wordt nooit aan de client blootgesteld.
+    return res.status(201).json({ ok: true, id: viewer_token });
   } catch (err) {
     console.error('[submit] database error:', err.message);
     return res.status(500).json({ ok: false, error: 'Opslaan mislukt. Probeer het opnieuw.' });
@@ -249,31 +253,18 @@ app.post('/api/submit', submitLimiter, (req, res) => {
 });
 
 // ── Endpoint: rapport ophalen ─────────────────────────────────────────────────
-// Geeft alleen de benodigde rapportdata terug (geen raw_answers, geen e-mail).
+// Zoekt op viewer_token (publiek token, losstaan van interne id).
+// Bestaande records hebben viewer_token = id (backfill), zodat oude links
+// (?rapport=<id>) blijven werken.
+// Geeft geen raw_answers, e-mail of interne id terug.
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-app.get('/api/rapport/:id', (req, res) => {
-  const { id } = req.params;
-  if (!UUID_RE.test(id)) {
-    return res.status(400).json({ ok: false, error: 'Ongeldig rapport-id.' });
-  }
-
-  let row;
-  try {
-    row = getSubmission(id);
-  } catch (err) {
-    console.error('[rapport] database error:', err.message);
-    return res.status(500).json({ ok: false, error: 'Fout bij ophalen rapport.' });
-  }
-
-  if (!row) {
-    return res.status(404).json({ ok: false, error: 'Rapport niet gevonden.' });
-  }
-
+function rapportResponse(row, res) {
   const datum = new Date(row.created_at).toLocaleDateString('nl-NL', {
     year: 'numeric', month: 'long', day: 'numeric',
   });
+  res.set('X-Robots-Tag', 'noindex, nofollow');
   return res.json({
     ok: true,
     rapport: {
@@ -284,22 +275,53 @@ app.get('/api/rapport/:id', (req, res) => {
       allergie: JSON.parse(row.score_allergie),
       kw:       JSON.parse(row.score_kw),
       iz:       JSON.parse(row.score_iz),
-      // e-mail en raw_answers worden bewust NIET teruggestuurd (privacy)
     },
   });
+}
+
+// Publieke route via viewer_token (nieuwe en bestaande links)
+app.get('/api/rapport/:token', (req, res) => {
+  const { token } = req.params;
+  if (!UUID_RE.test(token)) {
+    return res.status(400).json({ ok: false, error: 'Ongeldig rapport-token.' });
+  }
+  let row;
+  try { row = getSubmissionByToken(token); }
+  catch (err) {
+    console.error('[rapport] database error:', err.message);
+    return res.status(500).json({ ok: false, error: 'Fout bij ophalen rapport.' });
+  }
+  if (!row) return res.status(404).json({ ok: false, error: 'Rapport niet gevonden.' });
+  return rapportResponse(row, res);
+});
+
+// Alias-route voor expliciete token-lookup (optionele directe route)
+app.get('/api/rapport/token/:token', (req, res) => {
+  const { token } = req.params;
+  if (!UUID_RE.test(token)) {
+    return res.status(400).json({ ok: false, error: 'Ongeldig rapport-token.' });
+  }
+  let row;
+  try { row = getSubmissionByToken(token); }
+  catch (err) {
+    console.error('[rapport] database error:', err.message);
+    return res.status(500).json({ ok: false, error: 'Fout bij ophalen rapport.' });
+  }
+  if (!row) return res.status(404).json({ ok: false, error: 'Rapport niet gevonden.' });
+  return rapportResponse(row, res);
 });
 
 // ── Endpoint: PDF downloaden ──────────────────────────────────────────────────
 
-app.get('/api/pdf/:id', async (req, res) => {
-  const { id } = req.params;
-  if (!UUID_RE.test(id)) {
-    return res.status(400).json({ ok: false, error: 'Ongeldig rapport-id.' });
+app.get('/api/pdf/:token', async (req, res) => {
+  const { token } = req.params;
+  if (!UUID_RE.test(token)) {
+    return res.status(400).json({ ok: false, error: 'Ongeldig rapport-token.' });
   }
 
   let row;
   try {
-    row = getSubmission(id);
+    row = getSubmissionByToken(token);
   } catch (err) {
     console.error('[pdf] database error:', err.message);
     return res.status(500).json({ ok: false, error: 'Fout bij ophalen rapport.' });
@@ -325,7 +347,7 @@ app.get('/api/pdf/:id', async (req, res) => {
   try {
     const pdfBuffer = await generatePdf(rapport);
     const safeName  = row.naam.replace(/[^a-z0-9]/gi, '-').toLowerCase().replace(/-+/g, '-');
-    const filename  = `rapport-${safeName}-${id.slice(0, 8)}.pdf`;
+    const filename  = `rapport-${safeName}-${token.slice(0, 8)}.pdf`;
     res.set({
       'Content-Type':        'application/pdf',
       'Content-Disposition': `attachment; filename="${filename}"`,
@@ -340,15 +362,15 @@ app.get('/api/pdf/:id', async (req, res) => {
 
 // ── Endpoint: rapport e-mailen ────────────────────────────────────────────────
 
-app.post('/api/mail/:id', async (req, res) => {
-  const { id } = req.params;
-  if (!UUID_RE.test(id)) {
-    return res.status(400).json({ ok: false, error: 'Ongeldig rapport-id.' });
+app.post('/api/mail/:token', async (req, res) => {
+  const { token } = req.params;
+  if (!UUID_RE.test(token)) {
+    return res.status(400).json({ ok: false, error: 'Ongeldig rapport-token.' });
   }
 
   let row;
   try {
-    row = getSubmission(id);
+    row = getSubmissionByToken(token);
   } catch (err) {
     console.error('[mail] database error:', err.message);
     return res.status(500).json({ ok: false, error: 'Fout bij ophalen rapport.' });
@@ -372,7 +394,8 @@ app.post('/api/mail/:id', async (req, res) => {
   };
 
   const base       = (process.env.BASE_URL || '').replace(/\/$/, '');
-  const rapportUrl = base ? `${base}/?rapport=${id}` : null;
+  // Gebruik viewer_token in de link — de interne id wordt nooit naar de mail gestuurd
+  const rapportUrl = base ? `${base}/?rapport=${row.viewer_token}` : null;
 
   try {
     await sendRapportMail({

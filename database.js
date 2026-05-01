@@ -24,6 +24,15 @@ db.exec('PRAGMA journal_mode = WAL');
 try { db.exec('ALTER TABLE submissions ADD COLUMN deleted_at TEXT'); }                    catch (_) {}
 try { db.exec('ALTER TABLE submissions ADD COLUMN is_test INTEGER DEFAULT 0'); }          catch (_) {}
 try { db.exec('ALTER TABLE submissions ADD COLUMN excluded_from_team INTEGER DEFAULT 0'); } catch (_) {}
+try { db.exec('ALTER TABLE submissions ADD COLUMN viewer_token TEXT'); }                   catch (_) {}
+
+// Backfill: bestaande inzendingen zonder token krijgen hun eigen id als token.
+// Dit garandeert dat oude rapportlinks (?rapport=<id>) blijven werken —
+// de token-lookup vindt ze via viewer_token = id.
+db.exec("UPDATE submissions SET viewer_token = id WHERE viewer_token IS NULL OR viewer_token = ''");
+
+// Unieke index voor snelle en veilige token-lookup
+db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_viewer_token ON submissions(viewer_token)');
 
 // Schema – één tabel met alle benodigde kolommen
 db.exec(`
@@ -48,11 +57,13 @@ const insertSubmission = db.prepare(`
   INSERT INTO submissions (
     id, naam, email, team_code, rol, created_at,
     raw_answers, score_driehoek, score_voorkeur,
-    score_allergie, score_kw, score_iz
+    score_allergie, score_kw, score_iz,
+    viewer_token
   ) VALUES (
     :id, :naam, :email, :team_code, :rol, :created_at,
     :raw_answers, :score_driehoek, :score_voorkeur,
-    :score_allergie, :score_kw, :score_iz
+    :score_allergie, :score_kw, :score_iz,
+    :viewer_token
   )
 `);
 
@@ -74,6 +85,7 @@ function createSubmission(data) {
     score_allergie: JSON.stringify(data.score_allergie),
     score_kw:       JSON.stringify(data.score_kw),
     score_iz:       JSON.stringify(data.score_iz),
+    viewer_token:   data.viewer_token,
   });
 }
 
@@ -83,11 +95,25 @@ const selectSubmissionById = db.prepare(
 );
 
 /**
- * Haalt één opgeslagen submission op via id.
+ * Haalt één opgeslagen submission op via interne id.
  * Geeft null terug als het id niet bestaat.
  */
 function getSubmission(id) {
   return selectSubmissionById.get(id) ?? null;
+}
+
+// Lookup via viewer_token (publiek token — losstaan van interne id)
+const selectSubmissionByToken = db.prepare(
+  'SELECT * FROM submissions WHERE viewer_token = ?'
+);
+
+/**
+ * Haalt één submission op via viewer_token.
+ * Gebruikt door alle publieke rapport-endpoints.
+ * Geeft null terug als de token onbekend is.
+ */
+function getSubmissionByToken(token) {
+  return selectSubmissionByToken.get(token) ?? null;
 }
 
 // Prepared statement voor teamopvraging met deduplicatie per e-mailadres.
@@ -211,7 +237,7 @@ function updateSubmission(id, { naam, email, team_code, rol, is_test, excluded_f
 }
 
 module.exports = {
-  db, createSubmission, getSubmission, getTeamSubmissions,
+  db, createSubmission, getSubmission, getSubmissionByToken, getTeamSubmissions,
   getAllSubmissions, softDeleteSubmission, restoreSubmission, updateSubmission,
   purgeSubmission, softDeleteTeam, restoreTeam, purgeTeam, purgeExpired,
 };
