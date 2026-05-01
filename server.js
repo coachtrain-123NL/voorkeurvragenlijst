@@ -56,6 +56,7 @@ const { v4: uuidv4 } = require('uuid');
 const {
   createSubmission, getSubmission, getTeamSubmissions,
   getAllSubmissions, softDeleteSubmission, restoreSubmission, updateSubmission,
+  purgeSubmission, softDeleteTeam, restoreTeam, purgeTeam, purgeExpired,
 } = require('./database');
 const { calcScores }       = require('./scores');
 const { calcTeamAnalysis } = require('./team-analysis');
@@ -466,9 +467,12 @@ app.get('/api/team/:team_code', (req, res) => {
 // ── Admin endpoints ───────────────────────────────────────────────────────────
 // Alle /api/admin/* routes zijn beveiligd via de requireAdmin-middleware.
 
-// Alle inzendingen (alleen metadata — bedoeld voor de beheerpagina)
+// Alle inzendingen (alleen metadata — bedoeld voor de beheerpagina).
+// Voert ook de 30-dagen-opschoning uit zodat verlopen items al weg zijn
+// voordat de admin ze ziet.
 app.get('/api/admin/submissions', requireAdmin, (req, res) => {
   try {
+    purgeExpired();
     return res.json({ ok: true, submissions: getAllSubmissions() });
   } catch (err) {
     console.error('[admin] database error:', err.message);
@@ -531,7 +535,62 @@ app.post('/api/admin/submissions/:id/restore', requireAdmin, (req, res) => {
   }
 });
 
+// Permanent verwijderen van één inzending
+app.delete('/api/admin/submissions/:id/purge', requireAdmin, (req, res) => {
+  const { id } = req.params;
+  if (!UUID_RE.test(id)) return res.status(400).json({ ok: false, error: 'Ongeldig id.' });
+  try {
+    purgeSubmission(id);
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('[admin] purge error:', err.message);
+    return res.status(500).json({ ok: false, error: 'Definitief verwijderen mislukt.' });
+  }
+});
+
+// Team: soft delete alle leden
+app.post('/api/admin/teams/:team_code/delete', requireAdmin, (req, res) => {
+  const { team_code } = req.params;
+  if (!team_code?.trim()) return res.status(400).json({ ok: false, error: 'Teamnaam ontbreekt.' });
+  try {
+    softDeleteTeam(team_code);
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('[admin] team delete error:', err.message);
+    return res.status(500).json({ ok: false, error: 'Team verwijderen mislukt.' });
+  }
+});
+
+// Team: herstel alle leden
+app.post('/api/admin/teams/:team_code/restore', requireAdmin, (req, res) => {
+  const { team_code } = req.params;
+  if (!team_code?.trim()) return res.status(400).json({ ok: false, error: 'Teamnaam ontbreekt.' });
+  try {
+    restoreTeam(team_code);
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('[admin] team restore error:', err.message);
+    return res.status(500).json({ ok: false, error: 'Team herstellen mislukt.' });
+  }
+});
+
+// Team: permanent verwijderen (alleen al-verwijderde leden)
+app.post('/api/admin/teams/:team_code/purge', requireAdmin, (req, res) => {
+  const { team_code } = req.params;
+  if (!team_code?.trim()) return res.status(400).json({ ok: false, error: 'Teamnaam ontbreekt.' });
+  try {
+    purgeTeam(team_code);
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('[admin] team purge error:', err.message);
+    return res.status(500).json({ ok: false, error: 'Team definitief verwijderen mislukt.' });
+  }
+});
+
 // ── Start ─────────────────────────────────────────────────────────────────────
+
+// Verlopen inzendingen opschonen bij opstart (daarna herhaalt dit bij elke admin-load)
+purgeExpired();
 
 app.listen(PORT, () => {
   console.log(`Server draait op http://localhost:${PORT}`);

@@ -102,6 +102,13 @@
   #del-toggle { cursor: pointer; user-select: none; }
   #del-toggle:hover { color: #555; }
   #del-lijst .ind-rij { opacity: .7; }
+  .del-team-header { display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; border-bottom: 1px solid #f0f0f0; }
+  .del-team-leden { padding: 4px 16px 8px; }
+  .del-lid-rij { display: flex; align-items: center; justify-content: space-between;
+    padding: 5px 0; border-bottom: 1px solid #f5f5f5; font-size: 13px; }
+  .del-lid-rij:last-child { border-bottom: none; }
+  .team-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 8px; }
 
   /* Modal */
   #modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45);
@@ -335,7 +342,8 @@ function renderData(subs) {
                 <tbody>${rijen}</tbody>
               </table>
               <div class="team-footer">
-                ${rapportKnop}
+                <div>${rapportKnop}</div>
+                <button onclick="verwijderTeam(${JSON.stringify(t.label)})" class="btn btn-danger">Team verwijderen</button>
               </div>
             </div>
           </div>`;
@@ -353,19 +361,69 @@ function renderData(subs) {
           <div class="ind-rechts">${acties(s)}</div>
         </div>`).join('');
 
-  // Verwijderd
-  document.getElementById('del-lijst').innerHTML = deleted.length===0
-    ? '<p class="leeg">Geen verwijderde inzendingen.</p>'
-    : deleted.map(s=>`
+  // Verwijderd — groepeer per team_code, individueel daarna
+  if (deleted.length === 0) {
+    document.getElementById('del-lijst').innerHTML = '<p class="leeg">Geen verwijderde inzendingen.</p>';
+  } else {
+    const delTeams = {}, delInd = [];
+    for (const s of deleted) {
+      const code = (s.team_code || '').trim();
+      if (code) {
+        const key = code.toLowerCase();
+        if (!delTeams[key]) delTeams[key] = { label: code, leden: [] };
+        delTeams[key].leden.push(s);
+      } else {
+        delInd.push(s);
+      }
+    }
+
+    let html = '';
+
+    // Verwijderde teams
+    for (const key of Object.keys(delTeams).sort()) {
+      const t = delTeams[key];
+      const vroegste = t.leden.reduce((a, b) => a.deleted_at < b.deleted_at ? a : b);
+      const ledenHtml = t.leden.map(l => `
+        <div class="del-lid-rij">
+          <div class="ind-naam" style="font-size:13px">${esc(l.naam)}${testBadge(l)}</div>
+          <div class="ind-rechts">
+            <button onclick="herstel('${l.id}')" class="btn btn-restore">Herstel lid</button>
+            <button onclick="purge('${l.id}',${JSON.stringify(l.naam)})" class="btn btn-danger">Definitief</button>
+          </div>
+        </div>`).join('');
+      html += `
+        <div class="team-blok" style="margin-bottom:10px;opacity:.85">
+          <div class="del-team-header">
+            <div>
+              <span class="team-naam">${esc(t.label)}</span>
+              <span class="team-count" style="margin-left:8px">${t.leden.length} ${t.leden.length===1?'lid':'leden'} · verwijderd ${fmt(vroegste.deleted_at)}</span>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button onclick="herstelTeam(${JSON.stringify(t.label)})" class="btn btn-restore">Herstel team</button>
+              <button onclick="purgeTeam(${JSON.stringify(t.label)})" class="btn btn-danger">Definitief verwijderen</button>
+            </div>
+          </div>
+          <div class="del-team-leden">${ledenHtml}</div>
+        </div>`;
+    }
+
+    // Individueel verwijderd (geen team)
+    for (const s of delInd) {
+      html += `
         <div class="ind-rij">
           <div>
             <div class="ind-naam">${esc(s.naam)}${testBadge(s)}</div>
-            <div class="ind-sub">${s.team_code?esc(s.team_code)+' &nbsp;·&nbsp; ':''}${fmt(s.deleted_at)} verwijderd</div>
+            <div class="ind-sub">${fmt(s.deleted_at)} verwijderd</div>
           </div>
           <div class="ind-rechts">
             <button onclick="herstel('${s.id}')" class="btn btn-restore">Herstel</button>
+            <button onclick="purge('${s.id}',${JSON.stringify(s.naam)})" class="btn btn-danger">Definitief</button>
           </div>
-        </div>`).join('');
+        </div>`;
+    }
+
+    document.getElementById('del-lijst').innerHTML = html;
+  }
 }
 
 function toggleTeam(key) { document.getElementById('team-'+key).classList.toggle('open'); }
@@ -387,6 +445,33 @@ async function verwijder(id, naam) {
 async function herstel(id) {
   const r = await fetch(`/api/admin/submissions/${id}/restore`, { method:'POST' });
   if (!r.ok) { alert('Herstellen mislukt.'); return; }
+  laadData();
+}
+
+async function purge(id, naam) {
+  if (!confirm(`"${naam}" definitief verwijderen?\n\nDit kan NIET ongedaan worden gemaakt.`)) return;
+  const r = await fetch(`/api/admin/submissions/${id}/purge`, { method:'DELETE' });
+  if (!r.ok) { alert('Definitief verwijderen mislukt.'); return; }
+  laadData();
+}
+
+async function verwijderTeam(code) {
+  if (!confirm(`Team "${code}" verwijderen?\n\nAlle leden worden naar verwijderd verplaatst. Herstelbaar binnen 30 dagen.`)) return;
+  const r = await fetch(`/api/admin/teams/${encodeURIComponent(code)}/delete`, { method:'POST' });
+  if (!r.ok) { alert('Team verwijderen mislukt.'); return; }
+  laadData();
+}
+
+async function herstelTeam(code) {
+  const r = await fetch(`/api/admin/teams/${encodeURIComponent(code)}/restore`, { method:'POST' });
+  if (!r.ok) { alert('Team herstellen mislukt.'); return; }
+  laadData();
+}
+
+async function purgeTeam(code) {
+  if (!confirm(`Team "${code}" DEFINITIEF verwijderen?\n\nAlle verwijderde leden worden permanent gewist. Dit kan NIET ongedaan worden gemaakt.`)) return;
+  const r = await fetch(`/api/admin/teams/${encodeURIComponent(code)}/purge`, { method:'POST' });
+  if (!r.ok) { alert('Team definitief verwijderen mislukt.'); return; }
   laadData();
 }
 

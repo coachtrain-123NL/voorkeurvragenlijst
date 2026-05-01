@@ -154,6 +154,47 @@ function restoreSubmission(id) {
   stmtRestore.run(id);
 }
 
+// Permanent verwijderen van één inzending
+const stmtPurge = db.prepare('DELETE FROM submissions WHERE id = ?');
+function purgeSubmission(id) {
+  stmtPurge.run(id);
+}
+
+// Soft delete hele team (alleen nog-niet-verwijderde leden)
+const stmtSoftDeleteTeam = db.prepare(
+  'UPDATE submissions SET deleted_at = ? WHERE LOWER(TRIM(team_code)) = LOWER(TRIM(?)) AND deleted_at IS NULL'
+);
+function softDeleteTeam(teamCode) {
+  stmtSoftDeleteTeam.run(new Date().toISOString(), teamCode);
+}
+
+// Herstel alle leden van een team
+const stmtRestoreTeam = db.prepare(
+  'UPDATE submissions SET deleted_at = NULL WHERE LOWER(TRIM(team_code)) = LOWER(TRIM(?))'
+);
+function restoreTeam(teamCode) {
+  stmtRestoreTeam.run(teamCode);
+}
+
+// Permanent verwijderen van alle verwijderde leden van een team
+const stmtPurgeTeam = db.prepare(
+  'DELETE FROM submissions WHERE LOWER(TRIM(team_code)) = LOWER(TRIM(?)) AND deleted_at IS NOT NULL'
+);
+function purgeTeam(teamCode) {
+  stmtPurgeTeam.run(teamCode);
+}
+
+// Automatische opschoning: verwijder alles ouder dan 30 dagen definitief
+const stmtPurgeExpired = db.prepare(
+  "DELETE FROM submissions WHERE deleted_at IS NOT NULL AND deleted_at < datetime('now', '-30 days')"
+);
+function purgeExpired() {
+  const result = stmtPurgeExpired.run();
+  if (result.changes > 0) {
+    console.log(`[purge] ${result.changes} verlopen inzending(en) permanent verwijderd (>30 dagen).`);
+  }
+}
+
 // Bewerk naam/email/team_code/rol/is_test/excluded_from_team — scores blijven ongewijzigd
 const stmtUpdate = db.prepare(
   'UPDATE submissions SET naam=:naam, email=:email, team_code=:team_code, rol=:rol, is_test=:is_test, excluded_from_team=:excluded_from_team WHERE id=:id'
@@ -172,4 +213,5 @@ function updateSubmission(id, { naam, email, team_code, rol, is_test, excluded_f
 module.exports = {
   db, createSubmission, getSubmission, getTeamSubmissions,
   getAllSubmissions, softDeleteSubmission, restoreSubmission, updateSubmission,
+  purgeSubmission, softDeleteTeam, restoreTeam, purgeTeam, purgeExpired,
 };
